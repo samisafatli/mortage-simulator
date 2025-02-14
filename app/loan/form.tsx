@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, useColorScheme, Alert, TextInput } from 'react-native';
 import { MaskedTextInput } from 'react-native-mask-text';
 import { useRouter } from 'expo-router';
+import { Picker } from '@react-native-picker/picker';
 
 export default function LoanFormScreen() {
   const theme = useColorScheme();
@@ -12,14 +13,13 @@ export default function LoanFormScreen() {
   const [downPayment, setDownPayment] = useState('');
   const [interestRate, setInterestRate] = useState('');
   const [loanTerm, setLoanTerm] = useState('');
+  const [amortizationSystem, setAmortizationSystem] = useState<'price' | 'sac'>('price'); // Default: Price
 
   const formatPercentage = (text: string) => {
     let formattedText = text.replace(/[^0-9,]/g, '');
-
     if (formattedText.length > 0 && !formattedText.includes('%')) {
       formattedText += '%';
     }
-    
     setInterestRate(formattedText);
   };
 
@@ -46,7 +46,8 @@ export default function LoanFormScreen() {
         propertyValue: cleanPropertyValue,
         downPayment: cleanDownPayment,
         interestRate: cleanInterestRate,
-        loanTerm: cleanLoanTerm
+        loanTerm: cleanLoanTerm,
+        amortizationSystem,
       }
     });
   };
@@ -94,6 +95,17 @@ export default function LoanFormScreen() {
         onChangeText={setLoanTerm}
       />
 
+      <View style={[styles.pickerContainer, { backgroundColor: isDark ? '#333' : '#F5F5F5' }]}>
+        <Picker
+          selectedValue={amortizationSystem}
+          onValueChange={(itemValue) => setAmortizationSystem(itemValue as 'price' | 'sac')}
+          style={{ color: isDark ? '#FFF' : '#000' }}
+        >
+          <Picker.Item label="Sistema Price" value="price" />
+          <Picker.Item label="Sistema SAC" value="sac" />
+        </Picker>
+      </View>
+
       <TouchableOpacity
         style={[styles.button, { backgroundColor: isDark ? '#2E86DE' : '#1A73E8' }]}
         onPress={handleCalculate}
@@ -122,6 +134,11 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     borderRadius: 8,
     fontSize: 16,
+  },
+  pickerContainer: {
+    width: '90%',
+    borderRadius: 8,
+    marginBottom: 15,
   },
   button: {
     padding: 15,

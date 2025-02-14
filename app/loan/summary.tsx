@@ -10,11 +10,7 @@ type LoanInstallment = {
   balance: number;
 };
 
-const calculatePriceSchedule = (
-  principal: number,
-  interestRate: number,
-  months: number
-): LoanInstallment[] => {
+const calculatePriceSchedule = (principal: number, interestRate: number, months: number): LoanInstallment[] => {
   const monthlyRate = interestRate / 100 / 12;
   if (monthlyRate === 0) return [];
 
@@ -39,29 +35,61 @@ const calculatePriceSchedule = (
   return schedule;
 };
 
+const calculateSACSchedule = (principal: number, interestRate: number, months: number): LoanInstallment[] => {
+  const monthlyRate = interestRate / 100 / 12;
+  const fixedAmortization = principal / months; // Amortização fixa
+  let balance = principal;
+  let schedule: LoanInstallment[] = [];
+
+  for (let i = 1; i <= months; i++) {
+    const interestPayment = balance * monthlyRate;
+    const totalPayment = fixedAmortization + interestPayment;
+    balance -= fixedAmortization;
+
+    schedule.push({
+      month: i,
+      totalPayment,
+      interestPayment,
+      amortization: fixedAmortization,
+      balance: balance > 0 ? balance : 0,
+    });
+  }
+
+  return schedule;
+};
+
 export default function LoanSummaryScreen() {
   const theme = useColorScheme();
   const isDark = theme === 'dark';
   const router = useRouter();
-  const { propertyValue, downPayment, interestRate, loanTerm } = useLocalSearchParams<{
+  const { propertyValue, downPayment, interestRate, loanTerm, amortizationSystem } = useLocalSearchParams<{
     propertyValue: string;
     downPayment: string;
     interestRate: string;
     loanTerm: string;
+    amortizationSystem: 'price' | 'sac';
   }>();
 
   const [schedule, setSchedule] = useState<LoanInstallment[]>([]);
 
   useEffect(() => {
-    if (propertyValue && downPayment && interestRate && loanTerm) {
+    if (propertyValue && downPayment && interestRate && loanTerm && amortizationSystem) {
       const loanAmount = parseFloat(propertyValue) - parseFloat(downPayment);
       const rate = parseFloat(interestRate);
       const termMonths = parseInt(loanTerm, 10) * 12;
 
-      const priceSchedule = calculatePriceSchedule(loanAmount, rate, termMonths);
-      setSchedule(priceSchedule);
+      if (loanAmount <= 0 || rate <= 0 || termMonths <= 0) {
+        return;
+      }
+
+      const calculatedSchedule =
+        amortizationSystem === 'price'
+          ? calculatePriceSchedule(loanAmount, rate, termMonths)
+          : calculateSACSchedule(loanAmount, rate, termMonths);
+
+      setSchedule(calculatedSchedule);
     }
-  }, [propertyValue, downPayment, interestRate, loanTerm]);
+  }, [propertyValue, downPayment, interestRate, loanTerm, amortizationSystem]);
 
   return (
     <View style={[styles.container, { backgroundColor: isDark ? '#121212' : '#FFFFFF' }]}>
