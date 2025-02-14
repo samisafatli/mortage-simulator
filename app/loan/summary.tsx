@@ -2,7 +2,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, Text, StyleSheet, TouchableOpacity, useColorScheme, FlatList } from 'react-native';
 import { useEffect, useState } from 'react';
 
-// Definição do tipo para cada parcela do financiamento
 type LoanInstallment = {
   month: number;
   totalPayment: number;
@@ -11,7 +10,6 @@ type LoanInstallment = {
   balance: number;
 };
 
-// Função para calcular todas as parcelas pelo Sistema Price
 const calculatePriceSchedule = (
   principal: number,
   interestRate: number,
