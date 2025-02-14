@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, useColorScheme, Alert, TextInput } from 'react-native';
-import { MaskedTextInput } from 'react-native-mask-text';
+import { View, StyleSheet, useColorScheme, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Picker } from '@react-native-picker/picker';
+import { Text, TextInput, Button, RadioButton, MD3DarkTheme, MD3LightTheme, Provider as PaperProvider } from 'react-native-paper';
 
 export default function LoanFormScreen() {
   const theme = useColorScheme();
@@ -13,7 +12,7 @@ export default function LoanFormScreen() {
   const [downPayment, setDownPayment] = useState('');
   const [interestRate, setInterestRate] = useState('');
   const [loanTerm, setLoanTerm] = useState('');
-  const [amortizationSystem, setAmortizationSystem] = useState<'price' | 'sac'>('price'); // Default: Price
+  const [amortizationSystem, setAmortizationSystem] = useState<'price' | 'sac'>('price');
 
   const formatPercentage = (text: string) => {
     let formattedText = text.replace(/[^0-9,]/g, '');
@@ -53,66 +52,77 @@ export default function LoanFormScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF' }]}>
-      <Text style={[styles.title, { color: isDark ? '#FFF' : '#000' }]}>🏡 Simulação de Financiamento</Text>
+    <PaperProvider theme={isDark ? MD3DarkTheme : MD3LightTheme}>
+      <View style={[styles.container, { backgroundColor: isDark ? '#121212' : '#FFFFFF' }]}>
+        <Text variant="titleLarge" style={[styles.title, { color: isDark ? '#FFF' : '#000' }]}>
+          🏡 Simulação de Financiamento
+        </Text>
 
-      <MaskedTextInput
-        style={[styles.input, { backgroundColor: isDark ? '#333' : '#F5F5F5', color: isDark ? '#FFF' : '#000' }]}
-        placeholder="Valor do imóvel (R$)"
-        placeholderTextColor={isDark ? '#AAA' : '#666'}
-        keyboardType="numeric"
-        mask="R$ 999.999.999,99"
-        value={propertyValue}
-        onChangeText={setPropertyValue}
-      />
+        <TextInput
+          label="Valor do Imóvel (R$)"
+          mode="outlined"
+          keyboardType="numeric"
+          value={propertyValue}
+          onChangeText={setPropertyValue}
+          style={styles.input}
+          theme={{ colors: { background: isDark ? '#333' : '#F5F5F5' } }}
+        />
 
-      <MaskedTextInput
-        style={[styles.input, { backgroundColor: isDark ? '#333' : '#F5F5F5', color: isDark ? '#FFF' : '#000' }]}
-        placeholder="Valor da entrada (R$)"
-        placeholderTextColor={isDark ? '#AAA' : '#666'}
-        keyboardType="numeric"
-        mask="R$ 999.999.999,99"
-        value={downPayment}
-        onChangeText={setDownPayment}
-      />
+        <TextInput
+          label="Valor da Entrada (R$)"
+          mode="outlined"
+          keyboardType="numeric"
+          value={downPayment}
+          onChangeText={setDownPayment}
+          style={styles.input}
+          theme={{ colors: { background: isDark ? '#333' : '#F5F5F5' } }}
+        />
 
-      <TextInput
-        style={[styles.input, { backgroundColor: isDark ? '#333' : '#F5F5F5', color: isDark ? '#FFF' : '#000' }]}
-        placeholder="Taxa de juros anual (%)"
-        placeholderTextColor={isDark ? '#AAA' : '#666'}
-        keyboardType="numeric"
-        value={interestRate}
-        onChangeText={formatPercentage}
-      />
+        <TextInput
+          label="Taxa de Juros Anual (%)"
+          mode="outlined"
+          keyboardType="numeric"
+          value={interestRate}
+          onChangeText={formatPercentage}
+          style={styles.input}
+          theme={{ colors: { background: isDark ? '#333' : '#F5F5F5' } }}
+        />
 
-      <MaskedTextInput
-        style={[styles.input, { backgroundColor: isDark ? '#333' : '#F5F5F5', color: isDark ? '#FFF' : '#000' }]}
-        placeholder="Prazo do financiamento (anos)"
-        placeholderTextColor={isDark ? '#AAA' : '#666'}
-        keyboardType="numeric"
-        mask="99"
-        value={loanTerm}
-        onChangeText={setLoanTerm}
-      />
+        <TextInput
+          label="Prazo do Financiamento (anos)"
+          mode="outlined"
+          keyboardType="numeric"
+          value={loanTerm}
+          onChangeText={setLoanTerm}
+          style={styles.input}
+          theme={{ colors: { background: isDark ? '#333' : '#F5F5F5' } }}
+        />
 
-      <View style={[styles.pickerContainer, { backgroundColor: isDark ? '#333' : '#F5F5F5' }]}>
-        <Picker
-          selectedValue={amortizationSystem}
-          onValueChange={(itemValue) => setAmortizationSystem(itemValue as 'price' | 'sac')}
-          style={{ color: isDark ? '#FFF' : '#000' }}
+        <View style={styles.radioContainer}>
+          <Text style={[styles.radioLabel, { color: isDark ? '#FFF' : '#000' }]}>Sistema de Amortização:</Text>
+          <RadioButton.Group onValueChange={(value) => setAmortizationSystem(value as 'price' | 'sac')} value={amortizationSystem}>
+            <View style={styles.radioOption}>
+              <RadioButton value="price" color={isDark ? '#2E86DE' : '#1A73E8'} />
+              <Text style={{ color: isDark ? '#FFF' : '#000' }}>Sistema Price</Text>
+            </View>
+            <View style={styles.radioOption}>
+              <RadioButton value="sac" color={isDark ? '#2E86DE' : '#1A73E8'} />
+              <Text style={{ color: isDark ? '#FFF' : '#000' }}>Sistema SAC</Text>
+            </View>
+          </RadioButton.Group>
+        </View>
+
+        <Button
+          mode="contained"
+          onPress={handleCalculate}
+          style={styles.button}
+          labelStyle={styles.buttonText}
+          buttonColor={isDark ? '#2E86DE' : '#1A73E8'}
         >
-          <Picker.Item label="Sistema Price" value="price" />
-          <Picker.Item label="Sistema SAC" value="sac" />
-        </Picker>
+          📊 Calcular Financiamento
+        </Button>
       </View>
-
-      <TouchableOpacity
-        style={[styles.button, { backgroundColor: isDark ? '#2E86DE' : '#1A73E8' }]}
-        onPress={handleCalculate}
-      >
-        <Text style={styles.buttonText}>📊 Calcular Financiamento</Text>
-      </TouchableOpacity>
-    </View>
+    </PaperProvider>
   );
 }
 
@@ -120,34 +130,34 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     padding: 20,
   },
   title: {
-    fontSize: 22,
-    fontWeight: 'bold',
+    textAlign: 'center',
     marginBottom: 20,
   },
   input: {
-    width: '90%',
-    padding: 12,
     marginBottom: 15,
-    borderRadius: 8,
-    fontSize: 16,
+    backgroundColor: 'transparent',
   },
-  pickerContainer: {
-    width: '90%',
-    borderRadius: 8,
-    marginBottom: 15,
+  radioContainer: {
+    marginBottom: 20,
+  },
+  radioLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  radioOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
   },
   button: {
-    padding: 15,
-    borderRadius: 10,
-    width: '90%',
-    alignItems: 'center',
+    marginTop: 10,
+    paddingVertical: 10,
   },
   buttonText: {
-    color: '#FFF',
     fontSize: 16,
     fontWeight: 'bold',
   },
