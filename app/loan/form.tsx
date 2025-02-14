@@ -8,18 +8,14 @@ export default function LoanFormScreen() {
   const isDark = theme === 'dark';
   const router = useRouter();
 
-  // Estados do formulário
   const [propertyValue, setPropertyValue] = useState('');
   const [downPayment, setDownPayment] = useState('');
   const [interestRate, setInterestRate] = useState('');
   const [loanTerm, setLoanTerm] = useState('');
 
-  // Função para formatar taxa de juros (%) corretamente
   const formatPercentage = (text: string) => {
-    // Permite apenas números e vírgula
     let formattedText = text.replace(/[^0-9,]/g, '');
 
-    // Adiciona "%" automaticamente no final
     if (formattedText.length > 0 && !formattedText.includes('%')) {
       formattedText += '%';
     }
@@ -27,14 +23,12 @@ export default function LoanFormScreen() {
     setInterestRate(formattedText);
   };
 
-  // Função para validar e calcular o financiamento
   const handleCalculate = () => {
     if (!propertyValue || !downPayment || !interestRate || !loanTerm) {
       Alert.alert('Erro', 'Por favor, preencha todos os campos!');
       return;
     }
 
-    // Remover máscaras para fazer cálculos
     const cleanPropertyValue = parseFloat(propertyValue.replace(/\D/g, '')) / 100;
     const cleanDownPayment = parseFloat(downPayment.replace(/\D/g, '')) / 100;
     const cleanInterestRate = parseFloat(interestRate.replace('%', '').replace(',', '.'));
@@ -46,7 +40,6 @@ export default function LoanFormScreen() {
       return;
     }
 
-    // Passar os valores para a tela de resumo
     router.push({
       pathname: '/loan/summary',
       params: {
@@ -62,7 +55,6 @@ export default function LoanFormScreen() {
     <View style={[styles.container, { backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF' }]}>
       <Text style={[styles.title, { color: isDark ? '#FFF' : '#000' }]}>🏡 Simulação de Financiamento</Text>
 
-      {/* Input - Valor do Imóvel */}
       <MaskedTextInput
         style={[styles.input, { backgroundColor: isDark ? '#333' : '#F5F5F5', color: isDark ? '#FFF' : '#000' }]}
         placeholder="Valor do imóvel (R$)"
@@ -73,7 +65,6 @@ export default function LoanFormScreen() {
         onChangeText={setPropertyValue}
       />
 
-      {/* Input - Valor da Entrada */}
       <MaskedTextInput
         style={[styles.input, { backgroundColor: isDark ? '#333' : '#F5F5F5', color: isDark ? '#FFF' : '#000' }]}
         placeholder="Valor da entrada (R$)"
@@ -84,7 +75,6 @@ export default function LoanFormScreen() {
         onChangeText={setDownPayment}
       />
 
-      {/* Input - Taxa de Juros Anual */}
       <TextInput
         style={[styles.input, { backgroundColor: isDark ? '#333' : '#F5F5F5', color: isDark ? '#FFF' : '#000' }]}
         placeholder="Taxa de juros anual (%)"
@@ -94,7 +84,6 @@ export default function LoanFormScreen() {
         onChangeText={formatPercentage}
       />
 
-      {/* Input - Prazo do Financiamento */}
       <MaskedTextInput
         style={[styles.input, { backgroundColor: isDark ? '#333' : '#F5F5F5', color: isDark ? '#FFF' : '#000' }]}
         placeholder="Prazo do financiamento (anos)"

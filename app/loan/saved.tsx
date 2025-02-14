@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, useColorScheme } from 'react-native';
 
 export default function LoanFormScreen() {
-  const theme = useColorScheme(); // Detecta o tema do dispositivo
+  const theme = useColorScheme();
   const isDark = theme === 'dark';
 
   return (
