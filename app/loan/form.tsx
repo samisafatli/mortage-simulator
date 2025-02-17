@@ -1,25 +1,30 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { View, StyleSheet, useColorScheme } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Text, Button, RadioButton, PaperProvider, MD3DarkTheme, MD3LightTheme } from 'react-native-paper';
 import { MaskedTextInput } from 'react-native-mask-text';
-import debounce from 'lodash.debounce';
+import { useDebouncedState } from '@/hooks/useDebounceState';
 
 export default function LoanFormScreen() {
   const theme = useColorScheme();
   const isDark = theme === 'dark';
   const router = useRouter();
 
-  const [propertyValue, setPropertyValue] = useState('');
-  const [downPayment, setDownPayment] = useState('');
-  const [interestRate, setInterestRate] = useState('');
-  const [loanTerm, setLoanTerm] = useState('');
   const [amortizationSystem, setAmortizationSystem] = useState<'price' | 'sac'>('price');
+  const [propertyValue, setPropertyValue] = useDebouncedState("", 300);
+  const [downPayment, setDownPayment] = useDebouncedState("", 300);
+  const [interestRate, setInterestRate] = useDebouncedState("", 300);
+  const [loanTerm, setLoanTerm] = useDebouncedState("", 300);
 
-  const debouncedSetPropertyValue = useRef(debounce((text) => setPropertyValue(text), 300)).current;
-  const debouncedSetDownPayment = useRef(debounce((text) => setDownPayment(text), 300)).current;
-  const debouncedSetInterestRate = useRef(debounce((text) => setInterestRate(text), 300)).current;
-  const debouncedSetLoanTerm = useRef(debounce((text) => setLoanTerm(text), 300)).current;
+
+  const handlePropertyChange = useCallback((_: any, rawText: any) => {
+    setPropertyValue(rawText || '');
+  }, []);
+
+  const handleDownPaymentChange = useCallback((_: any, rawText: any) => {
+    setDownPayment(rawText || '');
+  }, []);
+
 
   const handleCalculate = () => {
     if (!propertyValue || !downPayment || !interestRate || !loanTerm) {
@@ -67,7 +72,7 @@ export default function LoanFormScreen() {
           }}
           keyboardType="numeric"
           value={propertyValue}
-          onChangeText={(_, rawText) => debouncedSetPropertyValue(rawText || '')}
+          onChangeText={handlePropertyChange}
           style={[styles.input, { backgroundColor: isDark ? '#222' : '#FFF', color: isDark ? '#FFF' : '#000' }]}
           placeholder="Valor do imóvel"
           placeholderTextColor={isDark ? '#AAA' : '#666'}
@@ -83,7 +88,7 @@ export default function LoanFormScreen() {
           }}
           keyboardType="numeric"
           value={downPayment}
-          onChangeText={(_, rawText) => debouncedSetDownPayment(rawText || '')}
+          onChangeText={handleDownPaymentChange}
           style={[styles.input, { backgroundColor: isDark ? '#222' : '#FFF', color: isDark ? '#FFF' : '#000' }]}
           placeholder="Valor da entrada"
           placeholderTextColor={isDark ? '#AAA' : '#666'}
@@ -93,7 +98,7 @@ export default function LoanFormScreen() {
           mask="99,99%"
           keyboardType="numeric"
           value={interestRate}
-          onChangeText={(_, rawText) => debouncedSetInterestRate(rawText || '')}
+          onChangeText={(_, rawText) => setInterestRate(rawText || '')}
           style={[styles.input, { backgroundColor: isDark ? '#222' : '#FFF', color: isDark ? '#FFF' : '#000' }]}
           placeholder="Taxa de juros anual (%)"
           placeholderTextColor={isDark ? '#AAA' : '#666'}
@@ -103,7 +108,7 @@ export default function LoanFormScreen() {
           mask="99"
           keyboardType="numeric"
           value={loanTerm}
-          onChangeText={(_, rawText) => debouncedSetLoanTerm(rawText || '')}
+          onChangeText={(_, rawText) => setLoanTerm(rawText || '')}
           style={[styles.input, { backgroundColor: isDark ? '#222' : '#FFF', color: isDark ? '#FFF' : '#000' }]}
           placeholder="Prazo do financiamento (anos)"
           placeholderTextColor={isDark ? '#AAA' : '#666'}
