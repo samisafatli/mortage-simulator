@@ -1,9 +1,11 @@
-import { useState, useRef, useCallback } from 'react';
-import { View, StyleSheet, useColorScheme } from 'react-native';
+import { useState, useCallback } from 'react';
+import { View, useColorScheme } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Text, Button, RadioButton, PaperProvider, MD3DarkTheme, MD3LightTheme } from 'react-native-paper';
 import { MaskedTextInput } from 'react-native-mask-text';
 import { useDebouncedState } from '@/hooks/useDebounceState';
+
+import { styles } from "../src/styles/form.styles";
 
 export default function LoanFormScreen() {
   const theme = useColorScheme();
@@ -135,39 +137,3 @@ export default function LoanFormScreen() {
     </PaperProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
-  title: {
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  input: {
-    width: '100%',
-    padding: 12,
-    marginBottom: 15,
-    borderRadius: 8,
-    fontSize: 16,
-  },
-  radioContainer: {
-    marginBottom: 20,
-  },
-  radioLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  radioOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  button: {
-    marginTop: 10,
-    paddingVertical: 10,
-  },
-});

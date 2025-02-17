@@ -1,7 +1,8 @@
 import { useColorScheme } from 'react-native';
 import { useRouter } from 'expo-router';
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import { Text, Button, Card, PaperProvider, MD3DarkTheme, MD3LightTheme } from 'react-native-paper';
+import { styles } from "../src/styles/index.styles";
 
 export default function HomeScreen() {
   const theme = useColorScheme();
@@ -50,24 +51,4 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
-  title: {
-    textAlign: 'center',
-    fontWeight: 'bold',
-    marginBottom: 60,
-  },
-  subtitle: {
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  card: {
-    marginBottom: 15,
-    borderRadius: 10,
-    padding: 10,
-  },
-});
+
