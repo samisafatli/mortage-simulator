@@ -1,7 +1,9 @@
-import { useState } from 'react';
-import { View, StyleSheet, useColorScheme, Alert } from 'react-native';
+import { useState, useRef } from 'react';
+import { View, StyleSheet, useColorScheme } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Text, TextInput, Button, RadioButton, MD3DarkTheme, MD3LightTheme, Provider as PaperProvider } from 'react-native-paper';
+import { Text, Button, RadioButton, PaperProvider, MD3DarkTheme, MD3LightTheme } from 'react-native-paper';
+import { MaskedTextInput } from 'react-native-mask-text';
+import debounce from 'lodash.debounce';
 
 export default function LoanFormScreen() {
   const theme = useColorScheme();
@@ -14,17 +16,14 @@ export default function LoanFormScreen() {
   const [loanTerm, setLoanTerm] = useState('');
   const [amortizationSystem, setAmortizationSystem] = useState<'price' | 'sac'>('price');
 
-  const formatPercentage = (text: string) => {
-    let formattedText = text.replace(/[^0-9,]/g, '');
-    if (formattedText.length > 0 && !formattedText.includes('%')) {
-      formattedText += '%';
-    }
-    setInterestRate(formattedText);
-  };
+  const debouncedSetPropertyValue = useRef(debounce((text) => setPropertyValue(text), 300)).current;
+  const debouncedSetDownPayment = useRef(debounce((text) => setDownPayment(text), 300)).current;
+  const debouncedSetInterestRate = useRef(debounce((text) => setInterestRate(text), 300)).current;
+  const debouncedSetLoanTerm = useRef(debounce((text) => setLoanTerm(text), 300)).current;
 
   const handleCalculate = () => {
     if (!propertyValue || !downPayment || !interestRate || !loanTerm) {
-      Alert.alert('Erro', 'Por favor, preencha todos os campos!');
+      alert('Erro: Preencha todos os campos corretamente!');
       return;
     }
 
@@ -35,7 +34,7 @@ export default function LoanFormScreen() {
 
     const loanAmount = cleanPropertyValue - cleanDownPayment;
     if (loanAmount <= 0) {
-      Alert.alert('Erro', 'O valor da entrada deve ser menor que o valor do imóvel.');
+      alert('Erro: O valor da entrada deve ser menor que o valor do imóvel.');
       return;
     }
 
@@ -54,71 +53,77 @@ export default function LoanFormScreen() {
   return (
     <PaperProvider theme={isDark ? MD3DarkTheme : MD3LightTheme}>
       <View style={[styles.container, { backgroundColor: isDark ? '#121212' : '#FFFFFF' }]}>
-        <Text variant="titleLarge" style={[styles.title, { color: isDark ? '#FFF' : '#000' }]}>
-          🏡 Simulação de Financiamento
+        <Text variant="headlineLarge" style={[styles.title, { color: isDark ? '#FFF' : '#000' }]}>
+          Amortiza+
         </Text>
 
-        <TextInput
-          label="Valor do Imóvel (R$)"
-          mode="outlined"
+        <MaskedTextInput
+          type="currency"
+          options={{
+            prefix: 'R$ ',
+            decimalSeparator: ',',
+            groupSeparator: '.',
+            precision: 2,
+          }}
           keyboardType="numeric"
           value={propertyValue}
-          onChangeText={setPropertyValue}
-          style={styles.input}
-          theme={{ colors: { background: isDark ? '#333' : '#F5F5F5' } }}
+          onChangeText={(_, rawText) => debouncedSetPropertyValue(rawText || '')}
+          style={[styles.input, { backgroundColor: isDark ? '#222' : '#FFF', color: isDark ? '#FFF' : '#000' }]}
+          placeholder="Valor do imóvel"
+          placeholderTextColor={isDark ? '#AAA' : '#666'}
         />
 
-        <TextInput
-          label="Valor da Entrada (R$)"
-          mode="outlined"
+        <MaskedTextInput
+          type="currency"
+          options={{
+            prefix: 'R$ ',
+            decimalSeparator: ',',
+            groupSeparator: '.',
+            precision: 2,
+          }}
           keyboardType="numeric"
           value={downPayment}
-          onChangeText={setDownPayment}
-          style={styles.input}
-          theme={{ colors: { background: isDark ? '#333' : '#F5F5F5' } }}
+          onChangeText={(_, rawText) => debouncedSetDownPayment(rawText || '')}
+          style={[styles.input, { backgroundColor: isDark ? '#222' : '#FFF', color: isDark ? '#FFF' : '#000' }]}
+          placeholder="Valor da entrada"
+          placeholderTextColor={isDark ? '#AAA' : '#666'}
         />
 
-        <TextInput
-          label="Taxa de Juros Anual (%)"
-          mode="outlined"
+        <MaskedTextInput
+          mask="99,99%"
           keyboardType="numeric"
           value={interestRate}
-          onChangeText={formatPercentage}
-          style={styles.input}
-          theme={{ colors: { background: isDark ? '#333' : '#F5F5F5' } }}
+          onChangeText={(_, rawText) => debouncedSetInterestRate(rawText || '')}
+          style={[styles.input, { backgroundColor: isDark ? '#222' : '#FFF', color: isDark ? '#FFF' : '#000' }]}
+          placeholder="Taxa de juros anual (%)"
+          placeholderTextColor={isDark ? '#AAA' : '#666'}
         />
 
-        <TextInput
-          label="Prazo do Financiamento (anos)"
-          mode="outlined"
+        <MaskedTextInput
+          mask="99"
           keyboardType="numeric"
           value={loanTerm}
-          onChangeText={setLoanTerm}
-          style={styles.input}
-          theme={{ colors: { background: isDark ? '#333' : '#F5F5F5' } }}
+          onChangeText={(_, rawText) => debouncedSetLoanTerm(rawText || '')}
+          style={[styles.input, { backgroundColor: isDark ? '#222' : '#FFF', color: isDark ? '#FFF' : '#000' }]}
+          placeholder="Prazo do financiamento (anos)"
+          placeholderTextColor={isDark ? '#AAA' : '#666'}
         />
 
         <View style={styles.radioContainer}>
           <Text style={[styles.radioLabel, { color: isDark ? '#FFF' : '#000' }]}>Sistema de Amortização:</Text>
           <RadioButton.Group onValueChange={(value) => setAmortizationSystem(value as 'price' | 'sac')} value={amortizationSystem}>
             <View style={styles.radioOption}>
-              <RadioButton value="price" color={isDark ? '#2E86DE' : '#1A73E8'} />
+              <RadioButton value="price" color={isDark ? '#4C8BF5' : '#1A73E8'} />
               <Text style={{ color: isDark ? '#FFF' : '#000' }}>Sistema Price</Text>
             </View>
             <View style={styles.radioOption}>
-              <RadioButton value="sac" color={isDark ? '#2E86DE' : '#1A73E8'} />
+              <RadioButton value="sac" color={isDark ? '#4C8BF5' : '#1A73E8'} />
               <Text style={{ color: isDark ? '#FFF' : '#000' }}>Sistema SAC</Text>
             </View>
           </RadioButton.Group>
         </View>
 
-        <Button
-          mode="contained"
-          onPress={handleCalculate}
-          style={styles.button}
-          labelStyle={styles.buttonText}
-          buttonColor={isDark ? '#2E86DE' : '#1A73E8'}
-        >
+        <Button mode="contained" onPress={handleCalculate} style={styles.button}>
           📊 Calcular Financiamento
         </Button>
       </View>
@@ -137,8 +142,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   input: {
+    width: '100%',
+    padding: 12,
     marginBottom: 15,
-    backgroundColor: 'transparent',
+    borderRadius: 8,
+    fontSize: 16,
   },
   radioContainer: {
     marginBottom: 20,
@@ -156,9 +164,5 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 10,
     paddingVertical: 10,
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 });

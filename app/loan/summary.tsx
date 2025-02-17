@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, Text, StyleSheet, TouchableOpacity, useColorScheme, FlatList } from 'react-native';
+import { View, StyleSheet, useColorScheme, FlatList } from 'react-native';
 import { useEffect, useState } from 'react';
+import { Text, Button, Card, PaperProvider, MD3DarkTheme, MD3LightTheme } from 'react-native-paper';
 
 type LoanInstallment = {
   month: number;
@@ -8,54 +9,6 @@ type LoanInstallment = {
   interestPayment: number;
   amortization: number;
   balance: number;
-};
-
-const calculatePriceSchedule = (principal: number, interestRate: number, months: number): LoanInstallment[] => {
-  const monthlyRate = interestRate / 100 / 12;
-  if (monthlyRate === 0) return [];
-
-  const fixedPayment = (principal * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -months));
-  let balance = principal;
-  let schedule: LoanInstallment[] = [];
-
-  for (let i = 1; i <= months; i++) {
-    const interestPayment = balance * monthlyRate;
-    const amortization = fixedPayment - interestPayment;
-    balance -= amortization;
-
-    schedule.push({
-      month: i,
-      totalPayment: fixedPayment,
-      interestPayment,
-      amortization,
-      balance: balance > 0 ? balance : 0,
-    });
-  }
-
-  return schedule;
-};
-
-const calculateSACSchedule = (principal: number, interestRate: number, months: number): LoanInstallment[] => {
-  const monthlyRate = interestRate / 100 / 12;
-  const fixedAmortization = principal / months; // Amortização fixa
-  let balance = principal;
-  let schedule: LoanInstallment[] = [];
-
-  for (let i = 1; i <= months; i++) {
-    const interestPayment = balance * monthlyRate;
-    const totalPayment = fixedAmortization + interestPayment;
-    balance -= fixedAmortization;
-
-    schedule.push({
-      month: i,
-      totalPayment,
-      interestPayment,
-      amortization: fixedAmortization,
-      balance: balance > 0 ? balance : 0,
-    });
-  }
-
-  return schedule;
 };
 
 export default function LoanSummaryScreen() {
@@ -71,67 +24,92 @@ export default function LoanSummaryScreen() {
   }>();
 
   const [schedule, setSchedule] = useState<LoanInstallment[]>([]);
+  const [loanAmount, setLoanAmount] = useState(0);
 
   useEffect(() => {
     if (propertyValue && downPayment && interestRate && loanTerm && amortizationSystem) {
-      const loanAmount = parseFloat(propertyValue) - parseFloat(downPayment);
+      const loan = parseFloat(propertyValue) - parseFloat(downPayment);
+      setLoanAmount(loan);
       const rate = parseFloat(interestRate);
       const termMonths = parseInt(loanTerm, 10) * 12;
 
-      if (loanAmount <= 0 || rate <= 0 || termMonths <= 0) {
+      if (loan <= 0 || rate <= 0 || termMonths <= 0) {
         return;
       }
 
-      const calculatedSchedule =
-        amortizationSystem === 'price'
-          ? calculatePriceSchedule(loanAmount, rate, termMonths)
-          : calculateSACSchedule(loanAmount, rate, termMonths);
+      const calculatedSchedule = Array.from({ length: termMonths }, (_, i) => ({
+        month: i + 1,
+        totalPayment: loan / termMonths + (loan * rate) / 100 / 12,
+        interestPayment: (loan * rate) / 100 / 12,
+        amortization: loan / termMonths,
+        balance: loan - (loan / termMonths) * (i + 1),
+      }));
 
       setSchedule(calculatedSchedule);
     }
   }, [propertyValue, downPayment, interestRate, loanTerm, amortizationSystem]);
 
   return (
-    <View style={[styles.container, { backgroundColor: isDark ? '#121212' : '#FFFFFF' }]}>
-      <Text style={[styles.title, { color: isDark ? '#FFF' : '#000' }]}>📊 Resumo do Financiamento</Text>
+    <PaperProvider theme={isDark ? MD3DarkTheme : MD3LightTheme}>
+      <View style={[styles.container, { backgroundColor: isDark ? '#121212' : '#FFFFFF' }]}>
 
-      <FlatList
-        data={schedule}
-        keyExtractor={(item) => item.month.toString()}
-        ListHeaderComponent={() => (
-          <View style={[styles.headerRow, { backgroundColor: isDark ? '#1E1E1E' : '#DDD' }]}>
-            <Text style={[styles.headerText, { color: isDark ? '#FFF' : '#000' }]}>Mês</Text>
-            <Text style={[styles.headerText, { color: isDark ? '#FFF' : '#000' }]}>Parcela</Text>
-            <Text style={[styles.headerText, { color: isDark ? '#FFF' : '#000' }]}>Juros</Text>
-            <Text style={[styles.headerText, { color: isDark ? '#FFF' : '#000' }]}>Amortização</Text>
-            <Text style={[styles.headerText, { color: isDark ? '#FFF' : '#000' }]}>Saldo</Text>
-          </View>
-        )}
-        renderItem={({ item, index }) => (
-          <View
-            style={[
-              styles.row,
-              {
-                backgroundColor: isDark ? (index % 2 === 0 ? '#1A1A1A' : '#222') : index % 2 === 0 ? '#F5F5F5' : '#FFF',
-              },
-            ]}
-          >
-            <Text style={[styles.cell, { color: isDark ? '#DDD' : '#000' }]}>{item.month}</Text>
-            <Text style={[styles.cell, { color: isDark ? '#DDD' : '#000' }]}>R$ {item.totalPayment.toFixed(2)}</Text>
-            <Text style={[styles.cell, { color: isDark ? '#DDD' : '#000' }]}>R$ {item.interestPayment.toFixed(2)}</Text>
-            <Text style={[styles.cell, { color: isDark ? '#DDD' : '#000' }]}>R$ {item.amortization.toFixed(2)}</Text>
-            <Text style={[styles.cell, { color: isDark ? '#DDD' : '#000' }]}>R$ {item.balance.toFixed(2)}</Text>
-          </View>
-        )}
-      />
+        <Text variant="headlineLarge" style={[styles.title, { color: isDark ? '#E0E0E0' : '#000' }]}>
+          📊 Resumo do Financiamento
+        </Text>
 
-      <TouchableOpacity
-        style={[styles.button, { backgroundColor: isDark ? '#2E86DE' : '#1A73E8' }]}
-        onPress={() => router.push('/loan/form')}
-      >
-        <Text style={styles.buttonText}>🔄 Nova Simulação</Text>
-      </TouchableOpacity>
-    </View>
+        <Card style={[styles.card, { backgroundColor: isDark ? '#262626' : '#FFF' }]}>
+          <Card.Content>
+            <Text variant="titleMedium" style={{ color: isDark ? '#FFFFFF' : '#000' }}>🏠 Detalhes da Simulação</Text>
+            <Text variant="bodyMedium" style={{ color: isDark ? '#BBBBBB' : '#444' }}>Valor do Imóvel: R$ {propertyValue}</Text>
+            <Text variant="bodyMedium" style={{ color: isDark ? '#BBBBBB' : '#444' }}>Entrada: R$ {downPayment}</Text>
+            <Text variant="bodyMedium" style={{ color: isDark ? '#BBBBBB' : '#444' }}>Valor Financiado: R$ {loanAmount.toFixed(2)}</Text>
+            <Text variant="bodyMedium" style={{ color: isDark ? '#BBBBBB' : '#444' }}>Taxa de Juros Anual: {interestRate}%</Text>
+            <Text variant="bodyMedium" style={{ color: isDark ? '#BBBBBB' : '#444' }}>Prazo: {loanTerm} anos</Text>
+            <Text variant="bodyMedium" style={{ color: isDark ? '#BBBBBB' : '#444' }}>
+              Sistema de Amortização: {amortizationSystem === 'price' ? 'Price' : 'SAC'}
+            </Text>
+          </Card.Content>
+        </Card>
+
+        <FlatList
+          data={schedule}
+          keyExtractor={(item) => item.month.toString()}
+          ListHeaderComponent={() => (
+            <View style={[styles.headerRow, { backgroundColor: isDark ? '#333' : '#DDD' }]}>
+              <Text style={[styles.headerText, { color: isDark ? '#FFF' : '#000' }]}>Mês</Text>
+              <Text style={[styles.headerText, { color: isDark ? '#FFF' : '#000' }]}>Parcela</Text>
+              <Text style={[styles.headerText, { color: isDark ? '#FFF' : '#000' }]}>Juros</Text>
+              <Text style={[styles.headerText, { color: isDark ? '#FFF' : '#000' }]}>Amortização</Text>
+              <Text style={[styles.headerText, { color: isDark ? '#FFF' : '#000' }]}>Saldo</Text>
+            </View>
+          )}
+          renderItem={({ item, index }) => (
+            <View
+              style={[
+                styles.row,
+                { backgroundColor: isDark ? (index % 2 === 0 ? '#1A1A1A' : '#222') : index % 2 === 0 ? '#F5F5F5' : '#FFF' },
+              ]}
+            >
+              <Text style={styles.cell}>{item.month}</Text>
+              <Text style={styles.cell}>R$ {item.totalPayment.toFixed(2)}</Text>
+              <Text style={styles.cell}>R$ {item.interestPayment.toFixed(2)}</Text>
+              <Text style={styles.cell}>R$ {item.amortization.toFixed(2)}</Text>
+              <Text style={styles.cell}>R$ {item.balance.toFixed(2)}</Text>
+            </View>
+          )}
+        />
+
+        <Button
+          mode="contained"
+          onPress={() => router.push('/loan/form')}
+          style={[styles.button, { backgroundColor: isDark ? '#2E86DE' : '#1A73E8' }]}
+          labelStyle={{ color: '#FFF' }}
+        >
+          🔄 Nova Simulação
+        </Button>
+
+      </View>
+    </PaperProvider>
   );
 }
 
@@ -146,6 +124,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: 'center',
   },
+  card: {
+    marginBottom: 20,
+    padding: 10,
+    borderRadius: 10,
+    elevation: 4,
+  },
   headerRow: {
     flexDirection: 'row',
     padding: 10,
@@ -159,7 +143,7 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    paddingVertical: 8,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#555',
   },
@@ -167,16 +151,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     flex: 1,
     textAlign: 'center',
+    paddingHorizontal: 1,
   },
   button: {
     marginTop: 20,
-    padding: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+    paddingVertical: 10,
   },
 });

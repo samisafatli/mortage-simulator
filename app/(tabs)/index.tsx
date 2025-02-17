@@ -1,5 +1,7 @@
-import { View, Text, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
+import { useColorScheme } from 'react-native';
 import { useRouter } from 'expo-router';
+import { View, StyleSheet } from 'react-native';
+import { Text, Button, Card, PaperProvider, MD3DarkTheme, MD3LightTheme } from 'react-native-paper';
 
 export default function HomeScreen() {
   const theme = useColorScheme();
@@ -7,66 +9,65 @@ export default function HomeScreen() {
   const router = useRouter();
 
   return (
-    <View style={[styles.container, { backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF' }]}>
-    <Text style={[styles.title, { color: isDark ? '#FFF' : '#000' }]}>🏡 Mortgage Simulator</Text>
-    <Text style={[styles.subtitle, { color: isDark ? '#DDD' : '#333' }]}>
-      Calcule seu financiamento de forma rápida e fácil!
-    </Text>
+    <PaperProvider theme={isDark ? MD3DarkTheme : MD3LightTheme}>
+      <View style={[styles.container, { backgroundColor: isDark ? '#121212' : '#FFFFFF' }]}>
+        <Text variant="headlineLarge" style={[styles.title, { color: isDark ? '#FFF' : '#000' }]}>
+          Amortiza+
+        </Text>
+        <Text variant="bodyLarge" style={[styles.subtitle, { color: isDark ? '#CCC' : '#555' }]}>
+          Calcule seu financiamento de forma rápida e fácil!
+        </Text>
 
-    <TouchableOpacity
-      style={[styles.button, { backgroundColor: isDark ? '#2E86DE' : '#1A73E8' }]}
-      onPress={() => router.push('/loan/form')}
-    >
-      <Text style={styles.buttonText}>➕ Nova Simulação</Text>
-    </TouchableOpacity>
+        <Card style={[styles.card, { backgroundColor: isDark ? '#1E1E1E' : '#FFF' }]}>
+          <Card.Content>
+            <Text variant="titleMedium" style={{ color: isDark ? '#FFF' : '#000' }}>📊 Nova Simulação</Text>
+            <Text variant="bodyMedium" style={{ color: isDark ? '#CCC' : '#666' }}>
+              Insira os dados do financiamento e veja os cálculos detalhados.
+            </Text>
+          </Card.Content>
+          <Card.Actions>
+            <Button mode="contained" onPress={() => router.push('/loan/form')}>
+              ➕ Iniciar
+            </Button>
+          </Card.Actions>
+        </Card>
 
-    <TouchableOpacity
-      style={[styles.buttonSecondary, { backgroundColor: isDark ? '#444' : '#333' }]}
-      onPress={() => router.push('/loan/saved')}
-    >
-      <Text style={styles.buttonText}>📂 Simulações Salvas</Text>
-    </TouchableOpacity>
-  </View>
-);
+        <Card style={[styles.card, { backgroundColor: isDark ? '#1E1E1E' : '#FFF' }]}>
+          <Card.Content>
+            <Text variant="titleMedium" style={{ color: isDark ? '#FFF' : '#000' }}>📂 Simulações Salvas</Text>
+            <Text variant="bodyMedium" style={{ color: isDark ? '#CCC' : '#666' }}>
+              Consulte suas simulações anteriores e compare opções.
+            </Text>
+          </Card.Content>
+          <Card.Actions>
+            <Button mode="outlined" onPress={() => router.push('/loan/saved')}>
+              📂 Acessar
+            </Button>
+          </Card.Actions>
+        </Card>
+      </View>
+    </PaperProvider>
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     padding: 20,
-    backgroundColor: '#F5F5F5',
   },
   title: {
-    fontSize: 24,
+    textAlign: 'center',
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 60,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#555',
     textAlign: 'center',
-    marginBottom: 30,
+    marginBottom: 20,
   },
-  button: {
-    backgroundColor: '#2E86DE',
-    padding: 15,
-    borderRadius: 10,
+  card: {
     marginBottom: 15,
-    width: '80%',
-    alignItems: 'center',
-  },
-  buttonSecondary: {
-    backgroundColor: '#333',
-    padding: 15,
     borderRadius: 10,
-    width: '80%',
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+    padding: 10,
   },
 });
