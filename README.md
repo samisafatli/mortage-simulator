@@ -104,7 +104,4 @@ Where:
 ---
 
 ## 🏗 **Planned Future Features**
-- 📈 **Loan amortization graph**  
-- 🏦 **Compare different bank interest rates**  
 - 📑 **Export loan details as a PDF**  
-- 🔔 **Loan reminders & notifications**  

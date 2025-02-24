@@ -18,12 +18,12 @@ export const styles = StyleSheet.create({
         marginBottom: 15,
         borderRadius: 8,
         fontSize: 16,
-        borderWidth: 1, // Adicionado para melhor visibilidade
-        borderColor: '#CCC', // Cor padrão da borda
-        backgroundColor: '#FFF', // Garante boa visibilidade
+        borderWidth: 1,
+        borderColor: '#CCC',
+        backgroundColor: '#FFF',
     },
     inputError: {
-        borderColor: '#FF4D4D', // Vermelho para erro
+        borderColor: '#FF4D4D',
     },
     radioContainer: {
         marginBottom: 20,
@@ -43,13 +43,13 @@ export const styles = StyleSheet.create({
         marginTop: 10,
         paddingVertical: 12,
         borderRadius: 8,
-        backgroundColor: '#007BFF', // Azul padrão para botão ativo
+        backgroundColor: '#007BFF',
     },
     buttonDisabled: {
-        backgroundColor: '#CCC', // Cinza quando desativado
+        backgroundColor: '#CCC',
     },
     error: {
-        color: '#FF4D4D', // Vermelho para mensagens de erro
+        color: '#FF4D4D',
         fontSize: 14,
         marginBottom: 10,
         marginLeft: 5,
