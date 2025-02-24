@@ -4,22 +4,40 @@ export const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
+        backgroundColor: '#F1F3F5',
     },
     title: {
-        fontSize: 22,
+        fontSize: 24,
         fontWeight: 'bold',
-        marginBottom: 10,
         textAlign: 'center',
+        marginBottom: 20,
+        marginTop: 30,
+        color: '#333',
     },
     card: {
         marginBottom: 20,
-        padding: 10,
+        padding: 15,
         borderRadius: 10,
         elevation: 4,
+        backgroundColor: '#FFF',
+    },
+    cardTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    cardText: {
+        fontSize: 16,
+        marginBottom: 5,
+        color: '#444',
+    },
+    divider: {
+        marginVertical: 10,
     },
     headerRow: {
         flexDirection: 'row',
-        padding: 10,
+        backgroundColor: '#DDD',
+        paddingVertical: 10,
         borderRadius: 5,
     },
     headerText: {
@@ -30,18 +48,19 @@ export const styles = StyleSheet.create({
     },
     row: {
         flexDirection: 'row',
-        paddingVertical: 12,
+        paddingVertical: 10,
         borderBottomWidth: 1,
-        borderBottomColor: '#555',
+        borderBottomColor: '#CCC',
     },
     cell: {
         fontSize: 14,
         flex: 1,
         textAlign: 'center',
-        paddingHorizontal: 1,
     },
     button: {
         marginTop: 20,
-        paddingVertical: 10,
+        paddingVertical: 12,
+        borderRadius: 8,
+        backgroundColor: '#1A73E8',
     },
 });

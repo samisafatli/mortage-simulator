@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, useColorScheme, FlatList } from 'react-native';
+import { View, FlatList, ScrollView } from 'react-native';
 import { useEffect, useState } from 'react';
-import { Text, Button, Card, PaperProvider, MD3DarkTheme, MD3LightTheme } from 'react-native-paper';
+import { Text, Button, Card, Divider, PaperProvider } from 'react-native-paper';
 
 import { styles } from "../src/styles/summary.styles";
 
@@ -14,8 +14,6 @@ type LoanInstallment = {
 };
 
 export default function LoanSummaryScreen() {
-  const theme = useColorScheme();
-  const isDark = theme === 'dark';
   const router = useRouter();
   const { propertyValue, downPayment, interestRate, loanTerm, amortizationSystem } = useLocalSearchParams<{
     propertyValue: string;
@@ -45,7 +43,6 @@ export default function LoanSummaryScreen() {
       let totalPaid = 0;
 
       if (amortizationSystem === 'price') {
-        // Cálculo pelo Sistema Price
         const monthlyRate = rate / 12;
         const monthlyPayment =
           loan * (monthlyRate * Math.pow(1 + monthlyRate, termMonths)) /
@@ -67,7 +64,6 @@ export default function LoanSummaryScreen() {
           });
         }
       } else {
-        // Cálculo pelo Sistema SAC
         const amortization = loan / termMonths;
         let balance = loan;
         for (let i = 1; i <= termMonths; i++) {
@@ -88,64 +84,49 @@ export default function LoanSummaryScreen() {
 
       setSchedule(calculatedSchedule);
 
-      // Total de juros pagos ao longo do financiamento
       const totalInterestPaid = totalPaid - loan;
       setTotalInterest(totalInterestPaid);
-
-      // Total geral pago (empréstimo + juros)
       setTotalPaidAmount(totalPaid);
     }
   }, [propertyValue, downPayment, interestRate, loanTerm, amortizationSystem]);
 
 
-
   return (
-    <PaperProvider theme={isDark ? MD3DarkTheme : MD3LightTheme}>
-      <View style={[styles.container, { backgroundColor: isDark ? '#121212' : '#FFFFFF' }]}>
+    <PaperProvider>
+      <ScrollView style={styles.container}>
+        <Text style={styles.title}>📊 Resumo do Financiamento</Text>
 
-        <Text variant="headlineLarge" style={[styles.title, { color: isDark ? '#E0E0E0' : '#000' }]}>
-          📊 Resumo do Financiamento
-        </Text>
-
-        <Card style={[styles.card, { backgroundColor: isDark ? '#262626' : '#FFF' }]}>
+        <Card style={styles.card}>
           <Card.Content>
-            <Text variant="titleMedium" style={{ color: isDark ? '#FFFFFF' : '#000' }}>🏠 Detalhes da Simulação</Text>
-            <Text variant="bodyMedium" style={{ color: isDark ? '#BBBBBB' : '#444' }}>Valor do Imóvel: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseInt(propertyValue))}</Text>
-            <Text variant="bodyMedium" style={{ color: isDark ? '#BBBBBB' : '#444' }}>Entrada: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseInt(downPayment))}</Text>
-            <Text variant="bodyMedium" style={{ color: isDark ? '#BBBBBB' : '#444' }}>Valor Financiado: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(loanAmount)}</Text>
-            <Text variant="bodyMedium" style={{ color: isDark ? '#BBBBBB' : '#444' }}>Taxa de Juros Anual: {interestRate}%</Text>
-            <Text variant="bodyMedium" style={{ color: isDark ? '#BBBBBB' : '#444' }}>Prazo: {loanTerm} anos</Text>
-            <Text variant="bodyMedium" style={{ color: isDark ? '#BBBBBB' : '#444' }}>
-              Total de Juros Pagos: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalInterest)}
-            </Text>
-            <Text variant="bodyMedium" style={{ color: isDark ? '#BBBBBB' : '#444' }}>
-              Total Pago (Juros + Amortização): {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPaidAmount)}
-            </Text>
-            <Text variant="bodyMedium" style={{ color: isDark ? '#BBBBBB' : '#444' }}>
-              Sistema de Amortização: {amortizationSystem === 'price' ? 'Price' : 'SAC'}
-            </Text>
+            <Text style={styles.cardTitle}>🏠 Detalhes da Simulação</Text>
+            <Divider style={styles.divider} />
+            <Text style={styles.cardText}>💰 Valor do Imóvel: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseInt(propertyValue))}</Text>
+            <Text style={styles.cardText}>🔹 Entrada: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseInt(downPayment))}</Text>
+            <Text style={styles.cardText}>🏦 Valor Financiado: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(loanAmount)}</Text>
+            <Text style={styles.cardText}>📈 Taxa de Juros Anual: {interestRate}%</Text>
+            <Text style={styles.cardText}>🕒 Prazo: {loanTerm} anos</Text>
+            <Divider style={styles.divider} />
+            <Text style={styles.cardText}>💵 Total de Juros Pagos: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalInterest)}</Text>
+            <Text style={styles.cardText}>💳 Total Pago (Juros + Amortização): {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPaidAmount)}</Text>
+            <Text style={styles.cardText}>⚖️ Sistema de Amortização: {amortizationSystem === 'price' ? 'Price' : 'SAC'}</Text>
           </Card.Content>
         </Card>
 
+        {/* Tabela de amortização */}
         <FlatList
           data={schedule}
           keyExtractor={(item) => item.month.toString()}
           ListHeaderComponent={() => (
-            <View style={[styles.headerRow, { backgroundColor: isDark ? '#333' : '#DDD' }]}>
-              <Text style={[styles.headerText, { color: isDark ? '#FFF' : '#000' }]}>Mês</Text>
-              <Text style={[styles.headerText, { color: isDark ? '#FFF' : '#000' }]}>Parcela</Text>
-              <Text style={[styles.headerText, { color: isDark ? '#FFF' : '#000' }]}>Juros</Text>
-              <Text style={[styles.headerText, { color: isDark ? '#FFF' : '#000' }]}>Amortização</Text>
-              <Text style={[styles.headerText, { color: isDark ? '#FFF' : '#000' }]}>Saldo</Text>
+            <View style={styles.headerRow}>
+              <Text style={styles.headerText}>Mês</Text>
+              <Text style={styles.headerText}>Parcela</Text>
+              <Text style={styles.headerText}>Juros</Text>
+              <Text style={styles.headerText}>Amortização</Text>
+              <Text style={styles.headerText}>Saldo</Text>
             </View>
           )}
           renderItem={({ item, index }) => (
-            <View
-              style={[
-                styles.row,
-                { backgroundColor: isDark ? (index % 2 === 0 ? '#1A1A1A' : '#222') : index % 2 === 0 ? '#F5F5F5' : '#FFF' },
-              ]}
-            >
+            <View style={[styles.row, { backgroundColor: index % 2 === 0 ? '#F8F9FA' : '#FFF' }]}>
               <Text style={styles.cell}>{item.month}</Text>
               <Text style={styles.cell}>R$ {item.totalPayment.toFixed(2)}</Text>
               <Text style={styles.cell}>R$ {item.interestPayment.toFixed(2)}</Text>
@@ -155,17 +136,10 @@ export default function LoanSummaryScreen() {
           )}
         />
 
-        <Button
-          mode="contained"
-          onPress={() => router.push('/loan/form')}
-          style={[styles.button, { backgroundColor: isDark ? '#2E86DE' : '#1A73E8' }]}
-          labelStyle={{ color: '#FFF' }}
-        >
+        <Button mode="contained" onPress={() => router.push('/loan/form')} style={styles.button}>
           🔄 Nova Simulação
         </Button>
-
-      </View>
+      </ScrollView>
     </PaperProvider>
   );
 }
-
