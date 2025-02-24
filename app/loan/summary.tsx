@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, FlatList, ScrollView } from 'react-native';
+import { ScrollView } from 'react-native';
 import { useEffect, useState } from 'react';
 import { Text, Button, Card, Divider, PaperProvider } from 'react-native-paper';
 
@@ -23,6 +23,7 @@ export default function LoanSummaryScreen() {
     amortizationSystem: 'price' | 'sac';
   }>();
 
+  const [limit, setLimit] = useState(12);
   const [schedule, setSchedule] = useState<LoanInstallment[]>([]);
   const [loanAmount, setLoanAmount] = useState(0);
   const [totalInterest, setTotalInterest] = useState(0);
@@ -90,12 +91,12 @@ export default function LoanSummaryScreen() {
     }
   }, [propertyValue, downPayment, interestRate, loanTerm, amortizationSystem]);
 
-
   return (
     <PaperProvider>
       <ScrollView style={styles.container}>
         <Text style={styles.title}>📊 Resumo do Financiamento</Text>
 
+        {/* Cartão de detalhes da simulação */}
         <Card style={styles.card}>
           <Card.Content>
             <Text style={styles.cardTitle}>🏠 Detalhes da Simulação</Text>
@@ -112,32 +113,26 @@ export default function LoanSummaryScreen() {
           </Card.Content>
         </Card>
 
-        {/* Tabela de amortização */}
-        <FlatList
-          data={schedule}
-          keyExtractor={(item) => item.month.toString()}
-          ListHeaderComponent={() => (
-            <View style={styles.headerRow}>
-              <Text style={styles.headerText}>Mês</Text>
-              <Text style={styles.headerText}>Parcela</Text>
-              <Text style={styles.headerText}>Juros</Text>
-              <Text style={styles.headerText}>Amortização</Text>
-              <Text style={styles.headerText}>Saldo</Text>
-            </View>
-          )}
-          renderItem={({ item, index }) => (
-            <View style={[styles.row, { backgroundColor: index % 2 === 0 ? '#F8F9FA' : '#FFF' }]}>
-              <Text style={styles.cell}>{item.month}</Text>
-              <Text style={styles.cell}>R$ {item.totalPayment.toFixed(2)}</Text>
-              <Text style={styles.cell}>R$ {item.interestPayment.toFixed(2)}</Text>
-              <Text style={styles.cell}>R$ {item.amortization.toFixed(2)}</Text>
-              <Text style={styles.cell}>R$ {item.balance.toFixed(2)}</Text>
-            </View>
-          )}
-        />
+        {schedule.slice(0, limit).map((item) => (
+          <Card key={item.month} style={styles.paymentCard}>
+            <Card.Content>
+              <Text style={styles.paymentTitle}>📆 Mês {item.month}</Text>
+              <Divider style={styles.divider} />
+              <Text style={styles.cardText}>Parcela: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.totalPayment)}</Text>
+              <Text style={styles.cardText}>Juros: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.interestPayment)}</Text>
+              <Text style={styles.cardText}>Amortização: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.amortization)}</Text>
+              <Text style={styles.cardText}>Saldo Devedor: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.balance)}</Text>
+            </Card.Content>
+          </Card>
+        ))}
+        {limit < schedule.length && (
+          <Button mode="contained" onPress={() => setLimit(limit + 12)} style={styles.button}>
+            Ver Mais
+          </Button>
+        )}
 
-        <Button mode="contained" onPress={() => router.push('/loan/form')} style={styles.button}>
-          🔄 Nova Simulação
+        <Button mode="contained" onPress={() => router.push('/loan/form')} style={[styles.button, styles.lastButton]}>
+          Nova Simulação
         </Button>
       </ScrollView>
     </PaperProvider>

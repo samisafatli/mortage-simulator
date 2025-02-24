@@ -14,6 +14,26 @@ export const styles = StyleSheet.create({
         marginTop: 30,
         color: '#333',
     },
+    tableCard: {
+        marginBottom: 20,
+        borderRadius: 10,
+        elevation: 3,
+        backgroundColor: '#FFF',
+        overflow: 'hidden',
+    },
+    paymentCard: {
+        marginBottom: 15,
+        padding: 10,
+        borderRadius: 10,
+        elevation: 3,
+        backgroundColor: '#FFF',
+    },
+    paymentTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 5,
+    },
+
     card: {
         marginBottom: 20,
         padding: 15,
@@ -58,9 +78,16 @@ export const styles = StyleSheet.create({
         textAlign: 'center',
     },
     button: {
-        marginTop: 20,
+        marginTop: 10,
         paddingVertical: 12,
         borderRadius: 8,
         backgroundColor: '#1A73E8',
+    },
+    lastButton: {
+        marginBottom: 50,
+    },
+    columnSmall: {
+        flex: 0.5,
+        textAlign: 'center',
     },
 });
