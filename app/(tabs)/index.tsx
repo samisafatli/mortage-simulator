@@ -18,28 +18,28 @@ export default function HomeScreen() {
 
         <Card style={[styles.card, { backgroundColor: '#FFF' }]}>
           <Card.Content>
-            <Text variant="titleMedium" style={{ color: '#000' }}>📊 Nova Simulação</Text>
+            <Text variant="titleMedium" style={{ color: '#000' }}>Nova Simulação</Text>
             <Text variant="bodyMedium" style={{ color: '#666' }}>
               Insira os dados do financiamento e veja os cálculos detalhados.
             </Text>
           </Card.Content>
           <Card.Actions>
-            <Button mode="contained" onPress={() => router.push('/loan/form')}>
-              ➕ Iniciar
+            <Button onPress={() => router.push('/loan/form')}>
+              Iniciar
             </Button>
           </Card.Actions>
         </Card>
 
         <Card style={[styles.card, { backgroundColor: '#FFF' }]}>
           <Card.Content>
-            <Text variant="titleMedium" style={{ color: '#000' }}>📂 Simulações Salvas</Text>
+            <Text variant="titleMedium" style={{ color: '#000' }}>Simulações Salvas</Text>
             <Text variant="bodyMedium" style={{ color: '#666' }}>
               Consulte suas simulações anteriores e compare opções.
             </Text>
           </Card.Content>
           <Card.Actions>
-            <Button mode="outlined" onPress={() => router.push('/loan/saved')}>
-              📂 Acessar
+            <Button onPress={() => router.push('/loan/saved')}>
+              Acessar
             </Button>
           </Card.Actions>
         </Card>

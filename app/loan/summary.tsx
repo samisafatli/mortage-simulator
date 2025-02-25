@@ -1,7 +1,8 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ScrollView } from 'react-native';
 import { useEffect, useState } from 'react';
-import { Text, Button, Card, Divider, PaperProvider } from 'react-native-paper';
+import { Text, Button, Card, Divider, PaperProvider, Appbar } from 'react-native-paper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { styles } from "../src/styles/summary.styles";
 
@@ -91,32 +92,66 @@ export default function LoanSummaryScreen() {
     }
   }, [propertyValue, downPayment, interestRate, loanTerm, amortizationSystem]);
 
+  const saveSimulation = async () => {
+    try {
+      const simulation = {
+        id: new Date().getTime().toString(),
+        propertyValue,
+        downPayment,
+        interestRate,
+        loanTerm,
+        amortizationSystem,
+        loanAmount,
+        totalInterest,
+        totalPaidAmount,
+        date: new Date().toLocaleDateString(),
+      };
+
+      const storedSimulations = await AsyncStorage.getItem('simulations');
+      const simulations = storedSimulations ? JSON.parse(storedSimulations) : [];
+
+      simulations.push(simulation);
+      await AsyncStorage.setItem('simulations', JSON.stringify(simulations));
+
+      alert('Simulação salva com sucesso!');
+    } catch (error) {
+      alert('Erro ao salvar simulação.');
+    }
+  };
+
   return (
     <PaperProvider>
       <ScrollView style={styles.container}>
-        <Text style={styles.title}>📊 Resumo do Financiamento</Text>
+        <Appbar.Header style={styles.appBar}>
+          <Appbar.Action icon="arrow-left" onPress={() => router.push('/')} />
+          <Appbar.Content title="Detalhes da Simulação" />
+        </Appbar.Header>
 
-        {/* Cartão de detalhes da simulação */}
+
         <Card style={styles.card}>
           <Card.Content>
-            <Text style={styles.cardTitle}>🏠 Detalhes da Simulação</Text>
+            <Text style={styles.cardText}>Valor do Imóvel: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseInt(propertyValue))}</Text>
+            <Text style={styles.cardText}>Entrada: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseInt(downPayment))}</Text>
+            <Text style={styles.cardText}>Valor Financiado: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(loanAmount)}</Text>
+            <Text style={styles.cardText}>Taxa de Juros Anual: {interestRate}%</Text>
+            <Text style={styles.cardText}>Prazo: {loanTerm} anos</Text>
             <Divider style={styles.divider} />
-            <Text style={styles.cardText}>💰 Valor do Imóvel: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseInt(propertyValue))}</Text>
-            <Text style={styles.cardText}>🔹 Entrada: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseInt(downPayment))}</Text>
-            <Text style={styles.cardText}>🏦 Valor Financiado: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(loanAmount)}</Text>
-            <Text style={styles.cardText}>📈 Taxa de Juros Anual: {interestRate}%</Text>
-            <Text style={styles.cardText}>🕒 Prazo: {loanTerm} anos</Text>
-            <Divider style={styles.divider} />
-            <Text style={styles.cardText}>💵 Total de Juros Pagos: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalInterest)}</Text>
-            <Text style={styles.cardText}>💳 Total Pago (Juros + Amortização): {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPaidAmount)}</Text>
-            <Text style={styles.cardText}>⚖️ Sistema de Amortização: {amortizationSystem === 'price' ? 'Price' : 'SAC'}</Text>
+            <Text style={styles.cardText}>Juros Pagos: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalInterest)}</Text>
+            <Text style={styles.cardText}>Total Pago: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPaidAmount)}</Text>
+            <Text style={styles.cardText}>Sistema de Amortização: {amortizationSystem === 'price' ? 'Price' : 'SAC'}</Text>
           </Card.Content>
+          <Card.Actions style={{ justifyContent: 'flex-end' }}>
+            <Appbar.Action
+              icon="plus-circle"
+              onPress={saveSimulation}
+            />
+          </Card.Actions>
         </Card>
 
         {schedule.slice(0, limit).map((item) => (
           <Card key={item.month} style={styles.paymentCard}>
             <Card.Content>
-              <Text style={styles.paymentTitle}>📆 Mês {item.month}</Text>
+              <Text style={styles.paymentTitle}>Mês {item.month}</Text>
               <Divider style={styles.divider} />
               <Text style={styles.cardText}>Parcela: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.totalPayment)}</Text>
               <Text style={styles.cardText}>Juros: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.interestPayment)}</Text>

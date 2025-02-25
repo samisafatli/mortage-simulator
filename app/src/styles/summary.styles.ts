@@ -3,7 +3,9 @@ import { StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20,
+        paddingLeft: 20,
+        paddingRight: 20,
+        paddingBottom: 20,
         backgroundColor: '#F1F3F5',
     },
     title: {
@@ -11,7 +13,6 @@ export const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
         marginBottom: 20,
-        marginTop: 30,
         color: '#333',
     },
     tableCard: {
@@ -83,6 +84,19 @@ export const styles = StyleSheet.create({
         borderRadius: 8,
         backgroundColor: '#1A73E8',
     },
+    saveButton: {
+        backgroundColor: '#1A73E8',
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        borderRadius: 8,
+        elevation: 3,
+        marginTop: 10,
+    },
+    appBar: {
+        backgroundColor: 'transparent',
+        elevation: 0,
+    },
+
     lastButton: {
         marginBottom: 50,
     },
