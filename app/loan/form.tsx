@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { View, TextInput, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Text, Button, RadioButton, PaperProvider, MD3DarkTheme, MD3LightTheme } from 'react-native-paper';
+import { Text, Button, RadioButton, PaperProvider, MD3DarkTheme, MD3LightTheme, Appbar } from 'react-native-paper';
 import { styles } from "../src/styles/form.styles";
 
 export default function LoanFormScreen() {
@@ -73,11 +73,12 @@ export default function LoanFormScreen() {
 
   return (
     <PaperProvider>
+      <Appbar.Header style={styles.appBar}>
+        <Appbar.Action icon="arrow-left" onPress={() => router.push('/')} />
+        <Appbar.Content title="Amortiza+" />
+      </Appbar.Header>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-          <Text variant="headlineLarge" style={[styles.title, { color: '#000' }]}>
-            Amortiza+
-          </Text>
 
           <View style={{ marginBottom: 20 }}>
             <Text variant="titleMedium" style={{ color: '#000' }}>Sistema de Amortização</Text>

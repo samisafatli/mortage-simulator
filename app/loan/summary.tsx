@@ -127,7 +127,6 @@ export default function LoanSummaryScreen() {
           <Appbar.Content title="Detalhes da Simulação" />
         </Appbar.Header>
 
-
         <Card style={styles.card}>
           <Card.Content>
             <Text style={styles.cardText}>Valor do Imóvel: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseInt(propertyValue))}</Text>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Text, Button, Card, Divider, PaperProvider, Icon, IconButton } from 'react-native-paper';
+import { Text, Button, Card, Divider, PaperProvider, Icon, IconButton, Appbar } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { styles } from "../src/styles/saved.styles";
 
@@ -42,7 +42,10 @@ export default function SavedSimulationsScreen() {
   return (
     <PaperProvider>
       <ScrollView style={styles.container}>
-        <Text style={styles.title}>Simulações Salvas</Text>
+        <Appbar.Header style={styles.appBar}>
+          <Appbar.Action icon="arrow-left" onPress={() => router.push('/')} />
+          <Appbar.Content title="Simulações Salvas" />
+        </Appbar.Header>
         {simulations.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Icon source="clipboard-text-outline" size={80} color="#B0BEC5" />
@@ -76,7 +79,7 @@ export default function SavedSimulationsScreen() {
               <Card.Actions>
                 <IconButton
                   icon="delete"
-                  size={20}
+                  size={24}
                   onPress={() => deleteSimulation(sim.id)}
                 />
               </Card.Actions>

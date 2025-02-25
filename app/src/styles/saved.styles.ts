@@ -22,8 +22,8 @@ export const styles = StyleSheet.create({
         padding: 20,
         borderRadius: 12,
         backgroundColor: '#FFF',
-        elevation: 3, // Sombra no Android
-        shadowColor: '#000', // Sombra no iOS
+        elevation: 3,
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
@@ -48,6 +48,7 @@ export const styles = StyleSheet.create({
     },
 
     emptyContainer: {
+        marginTop: 100,
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
@@ -72,6 +73,10 @@ export const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: 'bold',
         color: '#FFF',
+    },
+    appBar: {
+        backgroundColor: 'transparent',
+        elevation: 0,
     },
 });
 
