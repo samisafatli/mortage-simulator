@@ -5,6 +5,7 @@ import { Text, Button, Card, Divider, PaperProvider, Appbar } from 'react-native
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { styles } from "../src/styles/summary.styles";
+import { TEXTS } from '@/constants/texts';
 
 type LoanInstallment = {
   month: number;
@@ -113,9 +114,9 @@ export default function LoanSummaryScreen() {
       simulations.push(simulation);
       await AsyncStorage.setItem('simulations', JSON.stringify(simulations));
 
-      alert('Simulação salva com sucesso!');
+      alert(TEXTS.ALERT_SIMULATION_SAVED);
     } catch (error) {
-      alert('Erro ao salvar simulação.');
+      alert(TEXTS.ALERT_SIMULATION_ERROR);
     }
   };
 
@@ -124,20 +125,20 @@ export default function LoanSummaryScreen() {
       <ScrollView style={styles.container}>
         <Appbar.Header style={styles.appBar}>
           <Appbar.Action icon="arrow-left" onPress={() => router.push('/')} />
-          <Appbar.Content title="Detalhes da Simulação" />
+          <Appbar.Content title={TEXTS.LOAN_SUMMARY_TITLE} />
         </Appbar.Header>
 
         <Card style={styles.card}>
           <Card.Content>
-            <Text style={styles.cardText}>Valor do Imóvel: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseInt(propertyValue))}</Text>
-            <Text style={styles.cardText}>Entrada: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseInt(downPayment))}</Text>
-            <Text style={styles.cardText}>Valor Financiado: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(loanAmount)}</Text>
-            <Text style={styles.cardText}>Taxa de Juros Anual: {interestRate}%</Text>
-            <Text style={styles.cardText}>Prazo: {loanTerm} anos</Text>
+            <Text style={styles.cardText}>{TEXTS.LOAN_SUMMARY_LOAN_AMOUNT} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseInt(propertyValue))}</Text>
+            <Text style={styles.cardText}>{TEXTS.LOAN_FORM_DOWN_PAYMENT} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseInt(downPayment))}</Text>
+            <Text style={styles.cardText}>{TEXTS.LOAN_SUMMARY_LOAN_AMOUNT} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(loanAmount)}</Text>
+            <Text style={styles.cardText}>{TEXTS.LOAN_SUMMARY_INTEREST_RATE} {interestRate}%</Text>
+            <Text style={styles.cardText}>{TEXTS.LOAN_SUMMARY_LOAN_TERM} {loanTerm} anos</Text>
             <Divider style={styles.divider} />
-            <Text style={styles.cardText}>Juros Pagos: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalInterest)}</Text>
-            <Text style={styles.cardText}>Total Pago: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPaidAmount)}</Text>
-            <Text style={styles.cardText}>Sistema de Amortização: {amortizationSystem === 'price' ? 'Price' : 'SAC'}</Text>
+            <Text style={styles.cardText}>{TEXTS.LOAN_SUMMARY_TOTAL_INTEREST} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalInterest)}</Text>
+            <Text style={styles.cardText}>{TEXTS.LOAN_SUMMARY_TOTAL_PAID} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPaidAmount)}</Text>
+            <Text style={styles.cardText}>{TEXTS.LOAN_SUMMARY_AMORTIZATION_SYSTEM} {amortizationSystem === 'price' ? TEXTS.AMORTIZATION_PRICE : TEXTS.AMORTIZATION_SAC}</Text>
           </Card.Content>
           <Card.Actions style={{ justifyContent: 'flex-end' }}>
             <Appbar.Action
@@ -150,23 +151,23 @@ export default function LoanSummaryScreen() {
         {schedule.slice(0, limit).map((item) => (
           <Card key={item.month} style={styles.paymentCard}>
             <Card.Content>
-              <Text style={styles.paymentTitle}>Mês {item.month}</Text>
+              <Text style={styles.paymentTitle}>{TEXTS.LOAN_SUMMARY_MONTHLY_PAYMENT} {item.month}</Text>
               <Divider style={styles.divider} />
-              <Text style={styles.cardText}>Parcela: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.totalPayment)}</Text>
-              <Text style={styles.cardText}>Juros: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.interestPayment)}</Text>
-              <Text style={styles.cardText}>Amortização: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.amortization)}</Text>
-              <Text style={styles.cardText}>Saldo Devedor: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.balance)}</Text>
+              <Text style={styles.cardText}>{TEXTS.LOAN_SUMMARY_MONTHLY_PAYMENT} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.totalPayment)}</Text>
+              <Text style={styles.cardText}>{TEXTS.LOAN_SUMMARY_INTEREST_PAYMENT} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.interestPayment)}</Text>
+              <Text style={styles.cardText}>{TEXTS.LOAN_SUMMARY_AMORTIZATION} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.amortization)}</Text>
+              <Text style={styles.cardText}>{TEXTS.LOAN_SUMMARY_BALANCE} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.balance)}</Text>
             </Card.Content>
           </Card>
         ))}
         {limit < schedule.length && (
           <Button mode="contained" onPress={() => setLimit(limit + 12)} style={styles.button}>
-            Ver Mais
+            {TEXTS.LOAN_SUMMARY_VIEW_MORE}
           </Button>
         )}
 
         <Button mode="contained" onPress={() => router.push('/loan/form')} style={[styles.button, styles.lastButton]}>
-          Nova Simulação
+          {TEXTS.LOAN_SUMMARY_NEW_SIMULATION}
         </Button>
       </ScrollView>
     </PaperProvider>

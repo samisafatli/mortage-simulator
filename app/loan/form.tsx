@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { View, TextInput, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Text, Button, RadioButton, PaperProvider, MD3DarkTheme, MD3LightTheme, Appbar } from 'react-native-paper';
+import { Text, Button, RadioButton, PaperProvider, Appbar } from 'react-native-paper';
 import { styles } from "../src/styles/form.styles";
+import { TEXTS } from '@/constants/texts';
 
 export default function LoanFormScreen() {
   const router = useRouter();
@@ -55,7 +56,7 @@ export default function LoanFormScreen() {
     const termNum = parseInt(loanTerm.replace(/\D/g, ''), 10) || 0;
 
     if (propertyNum <= 0 || downPaymentNum < 0 || interestNum <= 0 || interestNum > 50 || termNum < 1 || termNum > 40) {
-      alert("Preencha os campos corretamente!");
+      alert(TEXTS.LOAN_FORM_INVALID_INPUT);
       return;
     }
 
@@ -75,13 +76,13 @@ export default function LoanFormScreen() {
     <PaperProvider>
       <Appbar.Header style={styles.appBar}>
         <Appbar.Action icon="arrow-left" onPress={() => router.push('/')} />
-        <Appbar.Content title="Amortiza+" />
+        <Appbar.Content title={TEXTS.APP_NAME} />
       </Appbar.Header>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
 
           <View style={{ marginBottom: 20 }}>
-            <Text variant="titleMedium" style={{ color: '#000' }}>Sistema de Amortização</Text>
+            <Text variant="titleMedium" style={{ color: '#000' }}>{TEXTS.AMORTIZATION_SYSTEM}</Text>
             <RadioButton.Group
               onValueChange={(value) => setAmortizationSystem(value as 'price' | 'sac')}
               value={amortizationSystem}
@@ -89,11 +90,11 @@ export default function LoanFormScreen() {
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <RadioButton value="sac" color={'#000'} />
-                  <Text style={{ color: '#000' }}>SAC</Text>
+                  <Text style={{ color: '#000' }}>{TEXTS.AMORTIZATION_SAC}</Text>
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 20 }}>
                   <RadioButton value="price" color={'#000'} />
-                  <Text style={{ color: '#000' }}>Price</Text>
+                  <Text style={{ color: '#000' }}>{TEXTS.AMORTIZATION_PRICE}</Text>
                 </View>
               </View>
             </RadioButton.Group>
@@ -104,7 +105,7 @@ export default function LoanFormScreen() {
             value={propertyValue}
             onChangeText={(value) => handleInputChange('propertyValue', value)}
             style={[styles.input, { backgroundColor: '#FFF', color: '#000' }]}
-            placeholder="Valor do imóvel"
+            placeholder={TEXTS.LOAN_FORM_PLACEHOLDER_PROPERTY_VALUE}
           />
 
           <TextInput
@@ -113,7 +114,7 @@ export default function LoanFormScreen() {
             value={downPayment}
             onChangeText={(value) => handleInputChange('downPayment', value)}
             style={[styles.input, { backgroundColor: '#FFF', color: '#000' }]}
-            placeholder="Valor da entrada"
+            placeholder={TEXTS.LOAN_FORM_PLACEHOLDER_DOWN_PAYMENT}
           />
 
           <TextInput
@@ -122,7 +123,7 @@ export default function LoanFormScreen() {
             value={interestRate}
             onChangeText={(value) => handleInputChange('interestRate', value)}
             style={[styles.input, { backgroundColor: '#FFF', color: '#000' }]}
-            placeholder="Taxa de juros anual (%)"
+            placeholder={TEXTS.LOAN_FORM_PLACEHOLDER_INTEREST_RATE}
           />
 
           <TextInput
@@ -131,11 +132,11 @@ export default function LoanFormScreen() {
             value={loanTerm}
             onChangeText={(value) => handleInputChange('loanTerm', value)}
             style={[styles.input, { backgroundColor: '#FFF', color: '#000' }]}
-            placeholder="Prazo do financiamento (anos)"
+            placeholder={TEXTS.LOAN_FORM_PLACEHOLDER_LOAN_TERM}
           />
 
           <Button mode="contained" onPress={handleCalculate} style={styles.button}>
-            📊 Calcular Financiamento
+            {TEXTS.LOAN_FORM_CALCULATE}
           </Button>
         </ScrollView>
       </KeyboardAvoidingView>
