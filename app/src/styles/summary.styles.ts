@@ -48,9 +48,9 @@ export const styles = StyleSheet.create({
         marginBottom: 10,
     },
     cardText: {
-        fontSize: 16,
+        fontSize: 32,
         marginBottom: 5,
-        color: '#444',
+        color: 'red',
     },
     divider: {
         marginVertical: 10,
