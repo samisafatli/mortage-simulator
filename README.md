@@ -1,7 +1,3 @@
-Aqui está um **README.md** mais profissional e detalhado para o seu projeto **Mortgage Simulator**:
-
----
-
 # 🏡 **Mortgage Simulator - Home Loan Calculator**  
 
 A simple and powerful mortgage/loan simulator built with **React Native (Expo)** and **TypeScript**. This application helps users calculate their **monthly mortgage payments** based on property price, interest rates, down payments, and loan duration.  
