@@ -1,21 +1,20 @@
-# 🏡 **Mortgage Simulator - Home Loan Calculator**  
+# **Mortgage Simulator - Home Loan Calculator**  
 
 A simple and powerful mortgage/loan simulator built with **React Native (Expo)** and **TypeScript**. This application helps users calculate their **monthly mortgage payments** based on property price, interest rates, down payments, and loan duration.  
 
-📊 **Supports both fixed-rate and decreasing balance loans.**  
+**Supports both fixed-rate and decreasing balance loans.**  
 
 ---
 
-## 🚀 **Features**
-✅ Simulates mortgage loans with **fixed or decreasing payments**  
-✅ Calculates **monthly installments** and **total loan cost**  
-✅ Input fields for **property price, down payment, interest rate, and loan term**  
-✅ Built with **React Native, Expo Router, and TypeScript**  
-✅ (Coming soon) 📈 **Graphical visualization of loan amortization**  
+## **Features**
+- Simulates mortgage loans with **fixed or decreasing payments**  
+- Calculates **monthly installments** and **total loan cost**  
+- Input fields for **property price, down payment, interest rate, and loan term**  
+- Built with **React Native, Expo Router, and TypeScript**  
 
 ---
 
-## 📦 **Project Structure**
+## **Project Structure**
 The project is organized as follows:
 
 ```
@@ -38,33 +37,33 @@ mortgage-simulator/
 ---
 
 ## 📖 **How to Run the Project**
-### **1️⃣ Clone the Repository**
+### ** Clone the Repository**
 ```sh
 git clone https://github.com/YOUR-USERNAME/mortgage-simulator.git
 cd mortgage-simulator
 ```
 
-### **2️⃣ Install Dependencies**
+### **Install Dependencies**
 ```sh
 npm install
 ```
 
-### **3️⃣ Start the Project**
+### **Start the Project**
 ```sh
 npx expo start
 ```
 
 You can open the project in:
-- 📱 **Expo Go (for quick testing)**
-- 📟 **Android Emulator**
-- 🍏 **iOS Simulator**
+- **Expo Go (for quick testing)**
+- **Android Emulator**
+- **iOS Simulator**
 
 ---
 
-## 📊 **Loan Calculation Formula**
+## **Loan Calculation Formula**
 The app calculates loan installments using **two different methods**:
 
-### 📌 **Fixed-Rate Loan (Price System)**
+### **Fixed-Rate Loan (Price System)**
 This method keeps the monthly payment constant throughout the loan term.
 
 Formula:
@@ -77,7 +76,7 @@ Where:
 - \(i\) = Monthly interest rate (\% annual rate / 12)  
 - \(n\) = Total number of payments (years × 12 months)  
 
-### 📌 **Decreasing Balance Loan (SAC System)**
+### **Decreasing Balance Loan (SAC System)**
 This method reduces the monthly payment over time.
 
 First installment:
@@ -90,7 +89,7 @@ Where:
 
 ---
 
-## 🛠 **Tech Stack**
+## **Tech Stack**
 - **React Native (Expo)**
 - **TypeScript**
 - **Expo Router**
@@ -99,5 +98,5 @@ Where:
 
 ---
 
-## 🏗 **Planned Future Features**
-- 📑 **Export loan details as a PDF**  
+## **Planned Future Features**
+- **Export loan details as a PDF**  
