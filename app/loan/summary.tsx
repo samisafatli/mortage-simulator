@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { styles } from "../src/styles/summary.styles";
 import { TEXTS } from '@/constants/texts';
+import AlertDialog from '../components/AlertDialog';
 
 type LoanInstallment = {
   month: number;
@@ -30,6 +31,13 @@ export default function LoanSummaryScreen() {
   const [loanAmount, setLoanAmount] = useState(0);
   const [totalInterest, setTotalInterest] = useState(0);
   const [totalPaidAmount, setTotalPaidAmount] = useState(0);
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState('');
+
+  const showDialog = (msg: string) => {
+    setDialogMessage(msg);
+    setDialogVisible(true);
+  };
 
   useEffect(() => {
     if (propertyValue && downPayment && interestRate && loanTerm && amortizationSystem) {
@@ -114,15 +122,20 @@ export default function LoanSummaryScreen() {
       simulations.push(simulation);
       await AsyncStorage.setItem('simulations', JSON.stringify(simulations));
 
-      alert(TEXTS.ALERT_SIMULATION_SAVED);
+      showDialog(TEXTS.ALERT_SIMULATION_SAVED);
     } catch (error) {
-      alert(TEXTS.ALERT_SIMULATION_ERROR);
+      showDialog(TEXTS.ALERT_SIMULATION_ERROR);
     }
   };
 
   return (
     <PaperProvider>
       <ScrollView style={styles.container}>
+        <AlertDialog
+          visible={dialogVisible}
+          message={dialogMessage}
+          onClose={() => setDialogVisible(false)}
+        />
         <Appbar.Header style={styles.appBar}>
           <Appbar.Action icon="arrow-left" onPress={() => router.push('/')} />
           <Appbar.Content title={TEXTS.LOAN_SUMMARY_TITLE} />

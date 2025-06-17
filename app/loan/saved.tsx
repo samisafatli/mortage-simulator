@@ -5,6 +5,7 @@ import { Text, Button, Card, Divider, PaperProvider, Icon, IconButton, Appbar } 
 import { useRouter } from 'expo-router';
 import { styles } from "../src/styles/saved.styles";
 import { TEXTS } from '@/constants/texts';
+import AlertDialog from '../components/AlertDialog';
 
 export default function SavedSimulationsScreen() {
   type Simulation = {
@@ -19,6 +20,14 @@ export default function SavedSimulationsScreen() {
   };
 
   const [simulations, setSimulations] = useState<Simulation[]>([]);
+  const [dialogMessage, setDialogMessage] = useState('');
+  const [dialogVisible, setDialogVisible] = useState(false);
+
+
+  const showDialog = (msg: string) => {
+    setDialogMessage(msg);
+    setDialogVisible(true);
+  };
 
   const router = useRouter();
 
@@ -37,12 +46,17 @@ export default function SavedSimulationsScreen() {
     const updatedSimulations = simulations.filter((sim) => sim.id !== id);
     await AsyncStorage.setItem('simulations', JSON.stringify(updatedSimulations));
     setSimulations(updatedSimulations);
-    alert(TEXTS.SAVED_SIMULATIONS_DELETE_CONFIRM);
+    showDialog(TEXTS.SAVED_SIMULATIONS_DELETE_CONFIRM);
   };
 
   return (
     <PaperProvider>
       <ScrollView style={styles.container}>
+        <AlertDialog
+          visible={dialogVisible}
+          message={dialogMessage}
+          onClose={() => setDialogVisible(false)}
+        />
         <Appbar.Header style={styles.appBar}>
           <Appbar.Action icon="arrow-left" onPress={() => router.push('/')} />
           <Appbar.Content title={TEXTS.SAVED_SIMULATIONS_TITLE} />

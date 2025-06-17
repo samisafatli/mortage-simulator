@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { Text, Button, RadioButton, PaperProvider, Appbar } from 'react-native-paper';
 import { styles } from "../src/styles/form.styles";
 import { TEXTS } from '@/constants/texts';
+import AlertDialog from '../components/AlertDialog';
 
 export default function LoanFormScreen() {
   const router = useRouter();
@@ -13,6 +14,13 @@ export default function LoanFormScreen() {
   const [downPayment, setDownPayment] = useState('');
   const [interestRate, setInterestRate] = useState('');
   const [loanTerm, setLoanTerm] = useState<string>('');
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState('');
+
+  const showDialog = (msg: string) => {
+    setDialogMessage(msg);
+    setDialogVisible(true);
+  };
 
   const downPaymentRef = useRef<TextInput>(null);
   const interestRateRef = useRef<TextInput>(null);
@@ -40,15 +48,6 @@ export default function LoanFormScreen() {
     return numericValue ? `${numericValue} anos` : '';
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    switch (field) {
-      case 'propertyValue': setPropertyValue(formatCurrency(value)); break;
-      case 'downPayment': setDownPayment(formatCurrency(value)); break;
-      case 'interestRate': setInterestRate(formatInterestRate(value)); break;
-      case 'loanTerm': setLoanTerm(formatLoanTerm(value)); break;
-    }
-  };
-
   const handleCalculate = () => {
     const propertyNum = parseFloat(propertyValue.replace(/\D/g, '')) || 0;
     const downPaymentNum = parseFloat(downPayment.replace(/\D/g, '')) || 0;
@@ -56,7 +55,7 @@ export default function LoanFormScreen() {
     const termNum = parseInt(loanTerm.replace(/\D/g, ''), 10) || 0;
 
     if (propertyNum <= 0 || downPaymentNum < 0 || interestNum <= 0 || interestNum > 50 || termNum < 1 || termNum > 40) {
-      alert(TEXTS.LOAN_FORM_INVALID_INPUT);
+      showDialog(TEXTS.ALERT_FILL_ALL_FIELDS);
       return;
     }
 
@@ -80,7 +79,11 @@ export default function LoanFormScreen() {
       </Appbar.Header>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-
+          <AlertDialog
+            visible={dialogVisible}
+            message={dialogMessage}
+            onClose={() => setDialogVisible(false)}
+          />
           <View style={{ marginBottom: 20 }}>
             <Text variant="titleMedium" style={{ color: '#000' }}>{TEXTS.AMORTIZATION_SYSTEM}</Text>
             <RadioButton.Group
@@ -103,7 +106,11 @@ export default function LoanFormScreen() {
           <TextInput
             keyboardType="numeric"
             value={propertyValue}
-            onChangeText={(value) => handleInputChange('propertyValue', value)}
+            onChangeText={(value) => {
+              const numeric = parseFloat(value.replace(/\D/g, '')) || 0;
+              if (numeric <= 10000000) setPropertyValue(value);
+            }}
+            onBlur={() => setPropertyValue(formatCurrency(propertyValue))}
             style={[styles.input, { backgroundColor: '#FFF', color: '#000' }]}
             placeholder={TEXTS.LOAN_FORM_PLACEHOLDER_PROPERTY_VALUE}
           />
@@ -111,8 +118,15 @@ export default function LoanFormScreen() {
           <TextInput
             ref={downPaymentRef}
             keyboardType="numeric"
+            editable={!!parseFloat(propertyValue.replace(/\D/g, ''))}
             value={downPayment}
-            onChangeText={(value) => handleInputChange('downPayment', value)}
+            onChangeText={(value) => {
+              const dp = parseFloat(value.replace(/\D/g, '')) || 0;
+              const pv = parseFloat(propertyValue.replace(/\D/g, '')) || 0;
+              if (pv === 0 || dp <= pv * 0.8) setDownPayment(value);
+            }}
+
+            onBlur={() => setDownPayment(formatCurrency(downPayment))}
             style={[styles.input, { backgroundColor: '#FFF', color: '#000' }]}
             placeholder={TEXTS.LOAN_FORM_PLACEHOLDER_DOWN_PAYMENT}
           />
@@ -121,7 +135,12 @@ export default function LoanFormScreen() {
             ref={interestRateRef}
             keyboardType="numeric"
             value={interestRate}
-            onChangeText={(value) => handleInputChange('interestRate', value)}
+            onChangeText={(value) => {
+              const numeric = parseFloat(value.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+              if (numeric <= 80) setInterestRate(value);
+            }}
+
+            onBlur={() => setInterestRate(formatInterestRate(interestRate))}
             style={[styles.input, { backgroundColor: '#FFF', color: '#000' }]}
             placeholder={TEXTS.LOAN_FORM_PLACEHOLDER_INTEREST_RATE}
           />
@@ -130,10 +149,12 @@ export default function LoanFormScreen() {
             ref={loanTermRef}
             keyboardType="numeric"
             value={loanTerm}
-            onChangeText={(value) => handleInputChange('loanTerm', value)}
+            onChangeText={(value) => setLoanTerm(value)}
+            onBlur={() => setLoanTerm(formatLoanTerm(loanTerm))}
             style={[styles.input, { backgroundColor: '#FFF', color: '#000' }]}
             placeholder={TEXTS.LOAN_FORM_PLACEHOLDER_LOAN_TERM}
           />
+
 
           <Button mode="contained" onPress={handleCalculate} style={styles.button}>
             {TEXTS.LOAN_FORM_CALCULATE}
