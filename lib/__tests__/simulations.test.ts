@@ -4,7 +4,7 @@ import type { LoanInput } from '../amortization';
 import { deleteSimulation, findSimulation, loadSimulations, saveSimulation } from '../simulations';
 
 jest.mock('@react-native-async-storage/async-storage', () =>
-  require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
+  jest.requireActual('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
 
 const input: LoanInput = { propertyValue: 500_000, downPayment: 100_000, annualRate: 10, years: 30, system: 'price' };
