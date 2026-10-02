@@ -1,8 +1,7 @@
-import { ThemeProvider } from '@react-navigation/native';
+import { ThemeProvider } from 'expo-router/react-navigation';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { PaperProvider } from 'react-native-paper';
-import 'react-native-reanimated';
 
 import { darkTheme, lightTheme, navigationTheme } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/useColorScheme';
