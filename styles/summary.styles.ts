@@ -45,8 +45,24 @@ export const styles = StyleSheet.create({
     comparisonNote: {
         marginTop: 12,
     },
-    scheduleTitle: {
-        marginTop: 8,
+    scheduleSection: {
+        marginTop: 24,
+    },
+    scheduleTitleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 8,
+        marginBottom: 12,
+    },
+    scheduleTitleText: {
+        flexShrink: 1,
+        gap: 2,
+    },
+    fab: {
+        position: 'absolute',
+        right: 16,
+        bottom: 24,
     },
     tableFooter: {
         height: 12,

@@ -1,6 +1,7 @@
 import {
   annualToMonthlyRate,
   buildSchedule,
+  groupByYear,
   pricePayment,
   simulateLoan,
   yearlyBalances,
@@ -73,6 +74,21 @@ describe('simulateLoan', () => {
     const price = simulateLoan({ ...base, system: 'price' });
     expect(sac.totalInterest).toBeLessThan(price.totalInterest);
     expect(sac.firstPayment).toBeGreaterThan(price.firstPayment);
+  });
+
+  it('agrupa o cronograma por ano com totais consistentes', () => {
+    const result = simulateLoan({ ...base, system: 'price' });
+    const years = groupByYear(result.schedule);
+    expect(years).toHaveLength(30);
+    expect(years[0].year).toBe(1);
+    expect(years[0].installments).toHaveLength(12);
+    expect(years[0].installments[0].month).toBe(1);
+    expect(years[29].installments[11].month).toBe(360);
+    expect(years[0].paid).toBeCloseTo(years[0].interest + years[0].amortization, 6);
+    expect(years[0].balance).toBe(result.schedule[11].balance);
+    expect(years[29].balance).toBe(0);
+    const totalPaid = years.reduce((sum, y) => sum + y.paid, 0);
+    expect(totalPaid).toBeCloseTo(result.totalPaid, 6);
   });
 
   it('devolve o saldo no fim de cada ano', () => {

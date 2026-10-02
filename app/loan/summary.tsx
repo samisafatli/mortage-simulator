@@ -1,15 +1,23 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
-import { FlatList, Share, View } from 'react-native';
-import { Appbar, Button, Card, Chip, Divider, Snackbar, Text } from 'react-native-paper';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FlatList, Share, View, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
+import { Appbar, Button, Card, Chip, Divider, FAB, Snackbar, Text } from 'react-native-paper';
 
 import BalanceChart from '@/components/BalanceChart';
 import InfoRow from '@/components/InfoRow';
-import { ScheduleHeader, ScheduleRow } from '@/components/ScheduleTable';
+import { MonthRow, ScheduleHeader, YearRow } from '@/components/ScheduleTable';
 import ScreenHeader from '@/components/ScreenHeader';
 import { TEXTS } from '@/constants/texts';
 import { useAppTheme } from '@/constants/theme';
-import { simulateLoan, yearlyBalances, type Installment, type LoanInput, type LoanResult } from '@/lib/amortization';
+import {
+  groupByYear,
+  simulateLoan,
+  yearlyBalances,
+  type Installment,
+  type LoanInput,
+  type LoanResult,
+  type YearSummary,
+} from '@/lib/amortization';
 import { formatBRL, formatPercent } from '@/lib/format';
 import { findSimulation, saveSimulation } from '@/lib/simulations';
 import { parseLoanParams, toLoanParams, type LoanParams } from '@/lib/validation';
@@ -20,8 +28,14 @@ type SummaryParams = LoanParams & { origin?: string };
 const systemLabel = (system: LoanInput['system']) =>
   system === 'price' ? TEXTS.AMORTIZATION_PRICE : TEXTS.AMORTIZATION_SAC;
 
-const keyExtractor = (item: Installment) => String(item.month);
-const renderItem = ({ item }: { item: Installment }) => <ScheduleRow item={item} />;
+type ScheduleItem =
+  | { type: 'year'; key: string; summary: YearSummary; expanded: boolean }
+  | { type: 'month'; key: string; item: Installment; last: boolean };
+
+const keyExtractor = (item: ScheduleItem) => item.key;
+
+/** Mostra o botão de voltar ao topo depois de rolar além dos cards de resumo. */
+const SCROLL_TOP_THRESHOLD = 900;
 
 export default function LoanSummaryScreen() {
   const router = useRouter();
@@ -65,6 +79,58 @@ function LoanSummary({ input, cameFromForm }: LoanSummaryProps) {
   );
   const result = results[input.system];
   const balances = useMemo(() => yearlyBalances(result), [result]);
+  const years = useMemo(() => groupByYear(result.schedule), [result]);
+
+  const listRef = useRef<FlatList<ScheduleItem>>(null);
+  const [expandedYears, setExpandedYears] = useState<ReadonlySet<number>>(new Set());
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const allExpanded = expandedYears.size === years.length;
+
+  const scheduleItems = useMemo(
+    () =>
+      years.flatMap((summary): ScheduleItem[] => {
+        const expanded = expandedYears.has(summary.year);
+        const yearItem: ScheduleItem = { type: 'year', key: `y${summary.year}`, summary, expanded };
+        if (!expanded) return [yearItem];
+        return [
+          yearItem,
+          ...summary.installments.map((item, index): ScheduleItem => ({
+            type: 'month',
+            key: `m${item.month}`,
+            item,
+            last: index === summary.installments.length - 1,
+          })),
+        ];
+      }),
+    [years, expandedYears],
+  );
+
+  const toggleYear = useCallback((year: number) => {
+    setExpandedYears((current) => {
+      const next = new Set(current);
+      if (next.has(year)) next.delete(year);
+      else next.add(year);
+      return next;
+    });
+  }, []);
+
+  const toggleAll = () =>
+    setExpandedYears(allExpanded ? new Set() : new Set(years.map((summary) => summary.year)));
+
+  const renderItem = useCallback(
+    ({ item }: { item: ScheduleItem }) =>
+      item.type === 'year' ? (
+        <YearRow summary={item.summary} expanded={item.expanded} onToggle={toggleYear} />
+      ) : (
+        <MonthRow item={item.item} last={item.last} />
+      ),
+    [toggleYear],
+  );
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const shouldShow = event.nativeEvent.contentOffset.y > SCROLL_TOP_THRESHOLD;
+    if (shouldShow !== showScrollTop) setShowScrollTop(shouldShow);
+  };
 
   useEffect(() => {
     findSimulation(input)
@@ -102,7 +168,12 @@ function LoanSummary({ input, cameFromForm }: LoanSummaryProps) {
     else router.push({ pathname: '/loan/form', params: toLoanParams(input) });
   };
 
-  const header = <SummaryHeader input={input} result={result} results={results} balances={balances} />;
+  const header = (
+    <>
+      <SummaryHeader input={input} result={result} results={results} balances={balances} />
+      <ScheduleTitle allExpanded={allExpanded} onToggleAll={toggleAll} />
+    </>
+  );
 
   const footer = (
     <>
@@ -131,14 +202,26 @@ function LoanSummary({ input, cameFromForm }: LoanSummaryProps) {
       </ScreenHeader>
 
       <FlatList
-        data={result.schedule}
+        ref={listRef}
+        data={scheduleItems}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
         ListHeaderComponent={header}
         ListFooterComponent={footer}
         contentContainerStyle={styles.content}
-        initialNumToRender={24}
+        onScroll={handleScroll}
+        scrollEventThrottle={100}
+        initialNumToRender={20}
         windowSize={11}
+      />
+
+      <FAB
+        icon="arrow-up"
+        size="small"
+        visible={showScrollTop}
+        onPress={() => listRef.current?.scrollToOffset({ offset: 0, animated: true })}
+        accessibilityLabel={TEXTS.LOAN_SUMMARY_SCROLL_TOP}
+        style={styles.fab}
       />
 
       <Snackbar visible={message !== ''} onDismiss={() => setMessage('')} duration={2500}>
@@ -247,11 +330,33 @@ function SummaryHeader({ input, result, results, balances }: SummaryHeaderProps)
           <BalanceChart balances={balances} />
         </Card.Content>
       </Card>
+    </View>
+  );
+}
 
-      <View>
-        <Text variant="titleMedium" style={[styles.scheduleTitle, styles.cardTitle]}>{TEXTS.LOAN_SUMMARY_SCHEDULE}</Text>
-        <ScheduleHeader />
+type ScheduleTitleProps = Readonly<{ allExpanded: boolean; onToggleAll: () => void }>;
+
+function ScheduleTitle({ allExpanded, onToggleAll }: ScheduleTitleProps) {
+  const theme = useAppTheme();
+
+  return (
+    <View style={styles.scheduleSection}>
+      <View style={styles.scheduleTitleRow}>
+        <View style={styles.scheduleTitleText}>
+          <Text variant="titleMedium">{TEXTS.LOAN_SUMMARY_SCHEDULE}</Text>
+          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+            {TEXTS.LOAN_SUMMARY_SCHEDULE_HINT}
+          </Text>
+        </View>
+        <Button
+          compact
+          icon={allExpanded ? 'unfold-less-horizontal' : 'unfold-more-horizontal'}
+          onPress={onToggleAll}
+        >
+          {allExpanded ? TEXTS.LOAN_SUMMARY_COLLAPSE_ALL : TEXTS.LOAN_SUMMARY_EXPAND_ALL}
+        </Button>
       </View>
+      <ScheduleHeader />
     </View>
   );
 }

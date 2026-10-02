@@ -1,10 +1,10 @@
 import React, { memo } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Text } from 'react-native-paper';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Icon, Text } from 'react-native-paper';
 
 import { TEXTS } from '@/constants/texts';
 import { useAppTheme } from '@/constants/theme';
-import type { Installment } from '@/lib/amortization';
+import type { Installment, YearSummary } from '@/lib/amortization';
 import { formatBRL } from '@/lib/format';
 
 const strip = (value: number) => formatBRL(value).replace('R$', '').trim();
@@ -15,8 +15,8 @@ export function ScheduleHeader() {
 
   return (
     <View style={[styles.row, styles.header, { backgroundColor: theme.colors.surfaceVariant }]}>
-      <Text variant="labelMedium" style={[styles.month, color]}>{TEXTS.LOAN_SUMMARY_COL_MONTH}</Text>
-      <Text variant="labelMedium" style={[styles.cell, color]}>{TEXTS.LOAN_SUMMARY_COL_PAYMENT}</Text>
+      <Text variant="labelMedium" style={[styles.period, color]}>{TEXTS.LOAN_SUMMARY_COL_YEAR}</Text>
+      <Text variant="labelMedium" style={[styles.cell, color]}>{TEXTS.LOAN_SUMMARY_COL_PAID}</Text>
       <Text variant="labelMedium" style={[styles.cell, color]}>{TEXTS.LOAN_SUMMARY_COL_INTEREST}</Text>
       <Text variant="labelMedium" style={[styles.cell, color]}>{TEXTS.LOAN_SUMMARY_COL_AMORTIZATION}</Text>
       <Text variant="labelMedium" style={[styles.cell, color]}>{TEXTS.LOAN_SUMMARY_COL_BALANCE}</Text>
@@ -24,25 +24,67 @@ export function ScheduleHeader() {
   );
 }
 
-type ScheduleRowProps = Readonly<{ item: Installment }>;
+type YearRowProps = Readonly<{
+  summary: YearSummary;
+  expanded: boolean;
+  onToggle: (year: number) => void;
+}>;
 
-export const ScheduleRow = memo(function ScheduleRow({ item }: ScheduleRowProps) {
+export const YearRow = memo(function YearRow({ summary, expanded, onToggle }: YearRowProps) {
   const theme = useAppTheme();
-  const endOfYear = item.month % 12 === 0;
+
+  return (
+    <Pressable
+      onPress={() => onToggle(summary.year)}
+      android_ripple={{ color: theme.colors.surfaceVariant }}
+      accessibilityRole="button"
+      accessibilityState={{ expanded }}
+      accessibilityLabel={TEXTS.LOAN_SUMMARY_YEAR_A11Y(summary.year)}
+      style={[
+        styles.row,
+        styles.yearRow,
+        {
+          backgroundColor: expanded ? theme.colors.elevation.level2 : theme.colors.surface,
+          borderBottomColor: theme.colors.outlineVariant,
+        },
+      ]}
+    >
+      <View style={[styles.period, styles.yearLabel]}>
+        <Icon source={expanded ? 'chevron-down' : 'chevron-right'} size={16} color={theme.colors.primary} />
+        <Text variant="bodySmall" style={[styles.strong, { color: theme.colors.primary }]}>{summary.year}</Text>
+      </View>
+      <Text variant="bodySmall" style={[styles.cell, styles.strong]}>{strip(summary.paid)}</Text>
+      <Text variant="bodySmall" style={styles.cell}>{strip(summary.interest)}</Text>
+      <Text variant="bodySmall" style={styles.cell}>{strip(summary.amortization)}</Text>
+      <Text variant="bodySmall" style={styles.cell}>{strip(summary.balance)}</Text>
+    </Pressable>
+  );
+});
+
+type MonthRowProps = Readonly<{ item: Installment; last: boolean }>;
+
+export const MonthRow = memo(function MonthRow({ item, last }: MonthRowProps) {
+  const theme = useAppTheme();
+  const muted = { color: theme.colors.onSurfaceVariant };
 
   return (
     <View
       style={[
         styles.row,
-        { backgroundColor: theme.colors.surface, borderBottomColor: theme.colors.outlineVariant },
-        endOfYear && styles.yearEnd,
+        styles.monthRow,
+        {
+          backgroundColor: theme.colors.elevation.level2,
+          borderBottomColor: last ? theme.colors.outlineVariant : 'transparent',
+        },
       ]}
     >
-      <Text variant="bodySmall" style={styles.month}>{item.month}</Text>
-      <Text variant="bodySmall" style={[styles.cell, styles.strong]}>{strip(item.payment)}</Text>
-      <Text variant="bodySmall" style={styles.cell}>{strip(item.interest)}</Text>
-      <Text variant="bodySmall" style={styles.cell}>{strip(item.amortization)}</Text>
-      <Text variant="bodySmall" style={styles.cell}>{strip(item.balance)}</Text>
+      <Text variant="labelSmall" style={[styles.period, styles.monthLabel, muted]}>
+        {TEXTS.LOAN_SUMMARY_MONTH_SHORT(item.month)}
+      </Text>
+      <Text variant="labelSmall" style={styles.cell}>{strip(item.payment)}</Text>
+      <Text variant="labelSmall" style={[styles.cell, muted]}>{strip(item.interest)}</Text>
+      <Text variant="labelSmall" style={[styles.cell, muted]}>{strip(item.amortization)}</Text>
+      <Text variant="labelSmall" style={[styles.cell, muted]}>{strip(item.balance)}</Text>
     </View>
   );
 });
@@ -60,12 +102,23 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
   },
-  yearEnd: {
-    borderBottomWidth: 1,
+  yearRow: {
+    paddingVertical: 12,
   },
-  month: {
-    width: 36,
+  monthRow: {
+    paddingVertical: 6,
+  },
+  period: {
+    width: 48,
     fontVariant: ['tabular-nums'],
+  },
+  yearLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  monthLabel: {
+    paddingLeft: 18,
   },
   cell: {
     flex: 1,

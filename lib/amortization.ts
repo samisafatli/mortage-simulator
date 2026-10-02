@@ -92,6 +92,34 @@ export function simulateLoan(input: LoanInput): LoanResult {
   };
 }
 
+export type YearSummary = {
+  year: number;
+  /** Soma das parcelas pagas no ano. */
+  paid: number;
+  interest: number;
+  amortization: number;
+  /** Saldo devedor ao fim do ano. */
+  balance: number;
+  installments: Installment[];
+};
+
+/** Agrupa o cronograma em anos de 12 parcelas, com os totais de cada ano. */
+export function groupByYear(schedule: Installment[]): YearSummary[] {
+  const years: YearSummary[] = [];
+  for (let start = 0; start < schedule.length; start += 12) {
+    const installments = schedule.slice(start, start + 12);
+    years.push({
+      year: start / 12 + 1,
+      paid: installments.reduce((sum, item) => sum + item.payment, 0),
+      interest: installments.reduce((sum, item) => sum + item.interest, 0),
+      amortization: installments.reduce((sum, item) => sum + item.amortization, 0),
+      balance: installments[installments.length - 1].balance,
+      installments,
+    });
+  }
+  return years;
+}
+
 /** Saldo devedor ao fim de cada ano, começando pelo valor financiado (ano 0). */
 export function yearlyBalances(result: LoanResult): number[] {
   const balances = [result.principal];
