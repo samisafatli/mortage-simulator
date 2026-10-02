@@ -1,85 +1,40 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        paddingHorizontal: 20,
-        paddingBottom: 20,
-        backgroundColor: '#F9FAFC',
+    content: {
+        padding: 16,
+        paddingBottom: 40,
+        gap: 12,
+        flexGrow: 1,
     },
-
-    title: {
-        marginTop: 30,
-        fontSize: 22,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 20,
-        color: '#333',
-    },
-
     card: {
-        marginBottom: 15,
-        padding: 20,
-        borderRadius: 12,
-        backgroundColor: '#FFF',
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        borderRadius: 16,
     },
-
-    cardTitle: {
-        fontSize: 18,
+    cardHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 4,
+    },
+    cardValue: {
         fontWeight: 'bold',
-        color: '#222',
-        marginBottom: 5,
+        fontVariant: ['tabular-nums'],
     },
-
-    cardText: {
-        fontSize: 16,
-        color: '#555',
-        marginBottom: 3,
-    },
-
     divider: {
-        marginVertical: 10,
-        backgroundColor: '#DDD',
+        marginVertical: 8,
     },
-
     emptyContainer: {
-        marginTop: 100,
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        padding: 24,
+        gap: 12,
     },
-
     emptyMessage: {
-        fontSize: 16,
-        color: '#666',
         textAlign: 'center',
-        marginTop: 10,
     },
-
     newSimulationButton: {
-        marginTop: 15,
-        backgroundColor: '#1A73E8',
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        borderRadius: 8,
-    },
-
-    newSimulationButtonLabel: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        color: '#FFF',
-    },
-    appBar: {
-        backgroundColor: 'transparent',
-        elevation: 0,
+        marginTop: 8,
+        borderRadius: 12,
     },
 });
-
-
-
-

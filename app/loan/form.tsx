@@ -1,166 +1,200 @@
-import React, { useState, useRef } from 'react';
-import { View, TextInput, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Text, Button, RadioButton, PaperProvider, Appbar } from 'react-native-paper';
-import { styles } from "../src/styles/form.styles";
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useRef, useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, type TextInput as NativeTextInput } from 'react-native';
+import { Button, Card, HelperText, SegmentedButtons, Text, TextInput } from 'react-native-paper';
+
+import ScreenHeader from '@/components/ScreenHeader';
 import { TEXTS } from '@/constants/texts';
-import AlertDialog from '../components/AlertDialog';
+import { useAppTheme } from '@/constants/theme';
+import { annualToMonthlyRate, type AmortizationSystem, type LoanInput } from '@/lib/amortization';
+import {
+  formatBRL,
+  formatPercent,
+  maskCurrency,
+  maskInteger,
+  maskRate,
+  parseDigits,
+  parseRate,
+} from '@/lib/format';
+import {
+  hasErrors,
+  isLowDownPayment,
+  parseLoanParams,
+  toLoanParams,
+  validateLoanInput,
+  type LoanErrors,
+  type LoanField,
+  type LoanParams,
+} from '@/lib/validation';
+import { styles } from '@/styles/form.styles';
+
+// O TextInput do Paper repassa a ref para o TextInput nativo.
+type InputRef = NativeTextInput;
 
 export default function LoanFormScreen() {
   const router = useRouter();
+  const theme = useAppTheme();
+  const initial = parseLoanParams(useLocalSearchParams<LoanParams>());
 
-  const [amortizationSystem, setAmortizationSystem] = useState<'price' | 'sac'>('sac');
-  const [propertyValue, setPropertyValue] = useState('');
-  const [downPayment, setDownPayment] = useState('');
-  const [interestRate, setInterestRate] = useState('');
-  const [loanTerm, setLoanTerm] = useState<string>('');
-  const [dialogVisible, setDialogVisible] = useState(false);
-  const [dialogMessage, setDialogMessage] = useState('');
+  const [system, setSystem] = useState<AmortizationSystem>(initial?.system ?? 'sac');
+  const [propertyText, setPropertyText] = useState(initial ? maskCurrency(String(initial.propertyValue)) : '');
+  const [downPaymentText, setDownPaymentText] = useState(initial ? maskCurrency(String(initial.downPayment)) : '');
+  const [rateText, setRateText] = useState(initial ? maskRate(String(initial.annualRate)) : '');
+  const [yearsText, setYearsText] = useState(initial ? String(initial.years) : '');
+  const [submitted, setSubmitted] = useState(false);
 
-  const showDialog = (msg: string) => {
-    setDialogMessage(msg);
-    setDialogVisible(true);
+  const downPaymentRef = useRef<InputRef>(null);
+  const rateRef = useRef<InputRef>(null);
+  const yearsRef = useRef<InputRef>(null);
+
+  const input: LoanInput = {
+    propertyValue: parseDigits(propertyText),
+    downPayment: parseDigits(downPaymentText),
+    annualRate: parseRate(rateText),
+    years: parseDigits(yearsText),
+    system,
   };
 
-  const downPaymentRef = useRef<TextInput>(null);
-  const interestRateRef = useRef<TextInput>(null);
-  const loanTermRef = useRef<TextInput>(null);
+  // Depois da primeira tentativa de envio, os erros acompanham a digitação.
+  const errors: LoanErrors = submitted ? validateLoanInput(input) : {};
 
-  const formatCurrency = (value: string) => {
-    let num = value.replace(/\D/g, '');
-    num = num.replace(/^0+/, '');
-    return num ? `R$ ${parseFloat(num).toLocaleString('pt-BR')}` : '';
-  };
-
-  const formatInterestRate = (value: string) => {
-    let cleanedValue = value.replace(/[^\d,]/g, '');
-    if (cleanedValue.includes(',')) {
-      cleanedValue = cleanedValue.replace(/,+/g, ',');
-      const parts = cleanedValue.split(',');
-      cleanedValue = `${parts[0]},${parts[1]?.slice(0, 2) || ''}`;
-    }
-    return cleanedValue ? `${cleanedValue}%` : '';
-  };
-
-  const formatLoanTerm = (value: string) => {
-    let num = value.replace(/\D/g, '');
-    let numericValue = num ? Math.min(Math.max(parseInt(num, 10), 1), 40) : '';
-    return numericValue ? `${numericValue} anos` : '';
-  };
+  const financed = Math.max(input.propertyValue - input.downPayment, 0);
+  const downPaymentRatio = input.propertyValue > 0 ? (input.downPayment / input.propertyValue) * 100 : 0;
 
   const handleCalculate = () => {
-    const propertyNum = parseFloat(propertyValue.replace(/\D/g, '')) || 0;
-    const downPaymentNum = parseFloat(downPayment.replace(/\D/g, '')) || 0;
-    const interestNum = parseFloat(interestRate.replace('%', '').replace(',', '.')) || 0;
-    const termNum = parseInt(loanTerm.replace(/\D/g, ''), 10) || 0;
+    setSubmitted(true);
+    if (hasErrors(validateLoanInput(input))) return;
+    router.push({ pathname: '/loan/summary', params: { ...toLoanParams(input), origin: 'form' } });
+  };
 
-    if (propertyNum <= 0 || downPaymentNum < 0 || interestNum <= 0 || interestNum > 50 || termNum < 1 || termNum > 40) {
-      showDialog(TEXTS.ALERT_FILL_ALL_FIELDS);
-      return;
+  const helper = (field: LoanField, hint?: string, warning?: string) => {
+    if (errors[field]) {
+      return <HelperText type="error">{errors[field]}</HelperText>;
     }
-
-    router.push({
-      pathname: '/loan/summary',
-      params: {
-        propertyValue: propertyNum.toString(),
-        downPayment: downPaymentNum.toString(),
-        interestRate: interestNum.toString(),
-        loanTerm: termNum.toString(),
-        amortizationSystem,
-      }
-    });
+    if (warning) {
+      return <HelperText type="info" style={{ color: theme.colors.warning }}>{warning}</HelperText>;
+    }
+    return <HelperText type="info" visible={!!hint}>{hint ?? ' '}</HelperText>;
   };
 
   return (
-    <PaperProvider>
-      <Appbar.Header style={styles.appBar}>
-        <Appbar.Action icon="arrow-left" onPress={() => router.push('/')} />
-        <Appbar.Content title={TEXTS.APP_NAME} />
-      </Appbar.Header>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
+    <>
+      <ScreenHeader title={TEXTS.LOAN_FORM_TITLE} />
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-          <AlertDialog
-            visible={dialogVisible}
-            message={dialogMessage}
-            onClose={() => setDialogVisible(false)}
+          <Text variant="titleMedium" style={styles.sectionTitle}>{TEXTS.AMORTIZATION_SYSTEM}</Text>
+          <SegmentedButtons
+            value={system}
+            onValueChange={(value) => setSystem(value as AmortizationSystem)}
+            buttons={[
+              { value: 'sac', label: TEXTS.AMORTIZATION_SAC, icon: 'trending-down' },
+              { value: 'price', label: TEXTS.AMORTIZATION_PRICE, icon: 'trending-neutral' },
+            ]}
           />
-          <View style={{ marginBottom: 20 }}>
-            <Text variant="titleMedium" style={{ color: '#000' }}>{TEXTS.AMORTIZATION_SYSTEM}</Text>
-            <RadioButton.Group
-              onValueChange={(value) => setAmortizationSystem(value as 'price' | 'sac')}
-              value={amortizationSystem}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <RadioButton value="sac" color={'#000'} />
-                  <Text style={{ color: '#000' }}>{TEXTS.AMORTIZATION_SAC}</Text>
-                </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 20 }}>
-                  <RadioButton value="price" color={'#000'} />
-                  <Text style={{ color: '#000' }}>{TEXTS.AMORTIZATION_PRICE}</Text>
-                </View>
-              </View>
-            </RadioButton.Group>
-          </View>
+          <Text variant="bodySmall" style={[styles.systemDescription, { color: theme.colors.onSurfaceVariant }]}>
+            {system === 'sac' ? TEXTS.AMORTIZATION_SAC_DESCRIPTION : TEXTS.AMORTIZATION_PRICE_DESCRIPTION}
+          </Text>
 
           <TextInput
-            keyboardType="numeric"
-            value={propertyValue}
-            onChangeText={(value) => {
-              const numeric = parseFloat(value.replace(/\D/g, '')) || 0;
-              if (numeric <= 10000000) setPropertyValue(value);
-            }}
-            onBlur={() => setPropertyValue(formatCurrency(propertyValue))}
-            style={[styles.input, { backgroundColor: '#FFF', color: '#000' }]}
-            placeholder={TEXTS.LOAN_FORM_PLACEHOLDER_PROPERTY_VALUE}
+            mode="outlined"
+            label={TEXTS.LOAN_FORM_PROPERTY_VALUE}
+            placeholder="R$ 500.000"
+            keyboardType="number-pad"
+            returnKeyType="next"
+            value={propertyText}
+            onChangeText={(text) => setPropertyText(maskCurrency(text))}
+            onSubmitEditing={() => downPaymentRef.current?.focus()}
+            error={!!errors.propertyValue}
+            left={<TextInput.Icon icon="home-outline" />}
+            style={styles.field}
           />
+          {helper('propertyValue')}
 
           <TextInput
             ref={downPaymentRef}
-            keyboardType="numeric"
-            editable={!!parseFloat(propertyValue.replace(/\D/g, ''))}
-            value={downPayment}
-            onChangeText={(value) => {
-              const dp = parseFloat(value.replace(/\D/g, '')) || 0;
-              const pv = parseFloat(propertyValue.replace(/\D/g, '')) || 0;
-              if (pv === 0 || dp <= pv * 0.8) setDownPayment(value);
-            }}
-
-            onBlur={() => setDownPayment(formatCurrency(downPayment))}
-            style={[styles.input, { backgroundColor: '#FFF', color: '#000' }]}
-            placeholder={TEXTS.LOAN_FORM_PLACEHOLDER_DOWN_PAYMENT}
+            mode="outlined"
+            label={TEXTS.LOAN_FORM_DOWN_PAYMENT}
+            placeholder="R$ 100.000"
+            keyboardType="number-pad"
+            returnKeyType="next"
+            value={downPaymentText}
+            onChangeText={(text) => setDownPaymentText(maskCurrency(text))}
+            onSubmitEditing={() => rateRef.current?.focus()}
+            error={!!errors.downPayment}
+            left={<TextInput.Icon icon="cash" />}
+            style={styles.field}
           />
+          {helper(
+            'downPayment',
+            input.propertyValue > 0 && input.downPayment > 0
+              ? TEXTS.LOAN_FORM_DOWN_PAYMENT_HINT(formatPercent(downPaymentRatio, 1))
+              : undefined,
+            input.propertyValue > 0 && downPaymentText !== '' && isLowDownPayment(input)
+              ? TEXTS.LOAN_FORM_LOW_DOWN_PAYMENT
+              : undefined,
+          )}
 
           <TextInput
-            ref={interestRateRef}
-            keyboardType="numeric"
-            value={interestRate}
-            onChangeText={(value) => {
-              const numeric = parseFloat(value.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
-              if (numeric <= 80) setInterestRate(value);
-            }}
-
-            onBlur={() => setInterestRate(formatInterestRate(interestRate))}
-            style={[styles.input, { backgroundColor: '#FFF', color: '#000' }]}
-            placeholder={TEXTS.LOAN_FORM_PLACEHOLDER_INTEREST_RATE}
+            ref={rateRef}
+            mode="outlined"
+            label={TEXTS.LOAN_FORM_INTEREST_RATE}
+            placeholder="10,5"
+            keyboardType="decimal-pad"
+            returnKeyType="next"
+            value={rateText}
+            onChangeText={(text) => setRateText(maskRate(text))}
+            onSubmitEditing={() => yearsRef.current?.focus()}
+            error={!!errors.annualRate}
+            left={<TextInput.Icon icon="percent-outline" />}
+            right={<TextInput.Affix text={TEXTS.LOAN_FORM_RATE_SUFFIX} />}
+            style={styles.field}
           />
+          {helper(
+            'annualRate',
+            input.annualRate > 0
+              ? TEXTS.LOAN_FORM_RATE_HINT(formatPercent(annualToMonthlyRate(input.annualRate) * 100, 4))
+              : undefined,
+          )}
 
           <TextInput
-            ref={loanTermRef}
-            keyboardType="numeric"
-            value={loanTerm}
-            onChangeText={(value) => setLoanTerm(value)}
-            onBlur={() => setLoanTerm(formatLoanTerm(loanTerm))}
-            style={[styles.input, { backgroundColor: '#FFF', color: '#000' }]}
-            placeholder={TEXTS.LOAN_FORM_PLACEHOLDER_LOAN_TERM}
+            ref={yearsRef}
+            mode="outlined"
+            label={TEXTS.LOAN_FORM_LOAN_TERM}
+            placeholder="30"
+            keyboardType="number-pad"
+            returnKeyType="done"
+            value={yearsText}
+            onChangeText={(text) => setYearsText(maskInteger(text, 2))}
+            onSubmitEditing={handleCalculate}
+            error={!!errors.years}
+            left={<TextInput.Icon icon="calendar-month-outline" />}
+            right={<TextInput.Affix text={TEXTS.LOAN_FORM_TERM_SUFFIX} />}
+            style={styles.field}
           />
+          {helper('years', input.years > 0 ? TEXTS.LOAN_FORM_TERM_HINT(input.years * 12) : undefined)}
 
+          <Card mode="contained" style={[styles.financedCard, { backgroundColor: theme.colors.secondaryContainer }]}>
+            <Card.Content style={styles.financedRow}>
+              <Text variant="bodyLarge" style={{ color: theme.colors.onSecondaryContainer }}>
+                {TEXTS.LOAN_FORM_FINANCED}
+              </Text>
+              <Text variant="titleLarge" style={{ color: theme.colors.onSecondaryContainer }}>
+                {formatBRL(financed)}
+              </Text>
+            </Card.Content>
+          </Card>
 
-          <Button mode="contained" onPress={handleCalculate} style={styles.button}>
+          <Button
+            mode="contained"
+            icon="calculator-variant"
+            onPress={handleCalculate}
+            style={styles.button}
+            contentStyle={styles.buttonContent}
+          >
             {TEXTS.LOAN_FORM_CALCULATE}
           </Button>
         </ScrollView>
       </KeyboardAvoidingView>
-    </PaperProvider>
+    </>
   );
 }

@@ -2,60 +2,33 @@ import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        justifyContent: 'center',
         padding: 20,
+        paddingBottom: 40,
     },
-    title: {
-        textAlign: 'center',
+    sectionTitle: {
+        marginBottom: 8,
+    },
+    systemDescription: {
+        marginTop: 8,
         marginBottom: 20,
-        fontSize: 24,
-        fontWeight: 'bold',
     },
-    input: {
-        width: '100%',
-        padding: 12,
-        marginBottom: 15,
-        borderRadius: 8,
-        fontSize: 16,
-        borderWidth: 1,
-        borderColor: '#CCC',
-        backgroundColor: '#FFF',
+    field: {
+        marginBottom: 4,
     },
-    inputError: {
-        borderColor: '#FF4D4D',
-    },
-    radioContainer: {
+    financedCard: {
+        marginTop: 8,
         marginBottom: 20,
-        paddingHorizontal: 10,
+        borderRadius: 16,
     },
-    radioLabel: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginBottom: 10,
-    },
-    radioOption: {
+    financedRow: {
         flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 10,
     },
     button: {
-        marginTop: 10,
-        paddingVertical: 12,
-        borderRadius: 8,
-        backgroundColor: '#007BFF',
+        borderRadius: 12,
     },
-    buttonDisabled: {
-        backgroundColor: '#CCC',
-    },
-    error: {
-        color: '#FF4D4D',
-        fontSize: 14,
-        marginBottom: 10,
-        marginLeft: 5,
-    },
-    appBar: {
-        backgroundColor: 'transparent',
-        elevation: 0,
+    buttonContent: {
+        paddingVertical: 8,
     },
 });

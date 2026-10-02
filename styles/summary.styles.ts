@@ -1,107 +1,70 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        paddingLeft: 20,
-        paddingRight: 20,
-        paddingBottom: 20,
-        backgroundColor: '#F1F3F5',
+    content: {
+        padding: 16,
+        paddingBottom: 40,
     },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 20,
-        color: '#333',
+    header: {
+        gap: 16,
     },
-    tableCard: {
-        marginBottom: 20,
-        borderRadius: 10,
-        elevation: 3,
-        backgroundColor: '#FFF',
-        overflow: 'hidden',
-    },
-    paymentCard: {
-        marginBottom: 15,
-        padding: 10,
-        borderRadius: 10,
-        elevation: 3,
-        backgroundColor: '#FFF',
-    },
-    paymentTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 5,
-    },
-
     card: {
-        marginBottom: 20,
-        padding: 15,
-        borderRadius: 10,
-        elevation: 4,
-        backgroundColor: '#FFF',
+        borderRadius: 16,
+    },
+    heroLabel: {
+        marginBottom: 4,
+    },
+    heroValue: {
+        fontWeight: 'bold',
+        fontVariant: ['tabular-nums'],
+    },
+    heroFooter: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginTop: 12,
+        gap: 8,
     },
     cardTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 10,
-    },
-    cardText: {
-        fontSize: 16,
-        marginBottom: 5,
-        color: '#444',
+        marginBottom: 8,
     },
     divider: {
-        marginVertical: 10,
+        marginVertical: 8,
     },
-    headerRow: {
+    comparisonRow: {
         flexDirection: 'row',
-        backgroundColor: '#DDD',
-        paddingVertical: 10,
-        borderRadius: 5,
+        gap: 12,
     },
-    headerText: {
-        fontSize: 14,
-        fontWeight: 'bold',
+    comparisonColumn: {
         flex: 1,
-        textAlign: 'center',
+        padding: 12,
+        borderRadius: 12,
+        borderWidth: 1,
+        gap: 2,
     },
-    row: {
-        flexDirection: 'row',
-        paddingVertical: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: '#CCC',
+    comparisonNote: {
+        marginTop: 12,
     },
-    cell: {
-        fontSize: 14,
-        flex: 1,
-        textAlign: 'center',
+    scheduleTitle: {
+        marginTop: 8,
+    },
+    tableFooter: {
+        height: 12,
+        borderBottomLeftRadius: 12,
+        borderBottomRightRadius: 12,
+        marginBottom: 20,
     },
     button: {
-        marginTop: 10,
-        paddingVertical: 12,
-        borderRadius: 8,
-        backgroundColor: '#1A73E8',
+        borderRadius: 12,
     },
-    saveButton: {
-        backgroundColor: '#1A73E8',
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        borderRadius: 8,
-        elevation: 3,
-        marginTop: 10,
+    buttonContent: {
+        paddingVertical: 6,
     },
-    appBar: {
-        backgroundColor: 'transparent',
-        elevation: 0,
-    },
-
-    lastButton: {
-        marginBottom: 50,
-    },
-    columnSmall: {
-        flex: 0.5,
-        textAlign: 'center',
+    centered: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24,
+        gap: 16,
     },
 });

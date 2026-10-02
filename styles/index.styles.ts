@@ -2,22 +2,32 @@ import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
     padding: 20,
+    gap: 16,
+  },
+  hero: {
+    alignItems: 'center',
+    marginBottom: 24,
+    gap: 8,
+  },
+  logo: {
+    marginBottom: 8,
   },
   title: {
     textAlign: 'center',
     fontWeight: 'bold',
-    marginBottom: 60,
   },
   subtitle: {
     textAlign: 'center',
-    marginBottom: 20,
+    maxWidth: 320,
   },
   card: {
-    marginBottom: 15,
-    borderRadius: 10,
-    padding: 10,
+    borderRadius: 16,
+  },
+  disclaimer: {
+    textAlign: 'center',
+    marginTop: 8,
   },
 });
