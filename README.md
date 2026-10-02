@@ -1,102 +1,72 @@
-# **Mortgage Simulator - Home Loan Calculator**  
+# Amortiza+ — Mortgage Simulator
 
-A simple and powerful mortgage/loan simulator built with **React Native (Expo)** and **TypeScript**. This application helps users calculate their **monthly mortgage payments** based on property price, interest rates, down payments, and loan duration.  
+A home-loan simulator for the Brazilian market, built with **React Native (Expo)**, **Expo Router**, **React Native Paper** and **TypeScript**.
 
-**Supports both fixed-rate and decreasing balance loans.**  
+## Features
 
----
+- **SAC** (decreasing installments) and **Price** (fixed installments) amortization systems
+- Live input masks, per-field validation and hints (down-payment %, equivalent monthly rate, number of installments)
+- Result screen with first/last installment, total interest, total paid, a **SAC vs Price comparison** and a yearly **outstanding-balance chart**
+- Full month-by-month schedule (virtualized list)
+- Save, reopen, edit, share and delete simulations (stored locally with AsyncStorage)
+- Light and dark themes following the system setting
 
-## **Features**
-- Simulates mortgage loans with **fixed or decreasing payments**  
-- Calculates **monthly installments** and **total loan cost**  
-- Input fields for **property price, down payment, interest rate, and loan term**  
-- Built with **React Native, Expo Router, and TypeScript**  
+> Estimates only: insurance (MIP/DFI), administrative fees and TR are not included.
 
----
-
-## **Project Structure**
-The project is organized as follows:
+## Project structure
 
 ```
-mortgage-simulator/
-│── app/                     # Expo Router-based navigation
-│   ├── (tabs)/              # Tab navigation screens
-│   ├── home.tsx             # Main simulation screen
-│   ├── details.tsx          # Loan breakdown screen
-│── src/                     # Core application logic
-│   ├── components/          # Reusable UI components
-│   ├── hooks/               # Custom React hooks
-│   ├── utils/               # Loan calculation logic
-│── assets/                  # Static assets (images, fonts)
-│── tests/                   # Unit and integration tests
-│── package.json             # Dependencies
-│── tsconfig.json            # TypeScript configuration
-│── README.md                # Documentation
+app/                  # Routes (Expo Router) — only screens live here
+  _layout.tsx         # Providers (Paper + navigation theme) and Stack
+  index.tsx           # Home
+  loan/form.tsx       # Simulation form
+  loan/summary.tsx    # Result + schedule
+  loan/saved.tsx      # Saved simulations
+components/           # Reusable UI (header, dialog, chart, schedule table…)
+constants/            # Texts (pt-BR) and theme
+hooks/                # Color-scheme hooks
+lib/                  # Pure logic: amortization, formatting, validation, storage
+  __tests__/          # Jest unit tests
+styles/               # Layout-only StyleSheets (colors come from the theme)
 ```
 
----
+## Running
 
-## 📖 **How to Run the Project**
-### ** Clone the Repository**
-```sh
-git clone https://github.com/YOUR-USERNAME/mortgage-simulator.git
-cd mortgage-simulator
-```
-
-### **Install Dependencies**
 ```sh
 npm install
+npm start          # then open in Expo Go, an Android emulator or the iOS simulator
 ```
 
-### **Start the Project**
-```sh
-npx expo start
-```
+Other scripts:
 
-You can open the project in:
-- **Expo Go (for quick testing)**
-- **Android Emulator**
-- **iOS Simulator**
+| Script              | What it does                     |
+| ------------------- | -------------------------------- |
+| `npm test`          | Run unit tests once              |
+| `npm run test:watch`| Run tests in watch mode          |
+| `npm run typecheck` | TypeScript check                 |
+| `npm run lint`      | ESLint                           |
+| `npm run build`     | Production build with EAS        |
 
----
+## Calculation
 
-## **Loan Calculation Formula**
-The app calculates loan installments using **two different methods**:
+The interest rate entered is the **effective annual rate** (as quoted by Brazilian banks), converted to the equivalent monthly rate:
 
-### **Fixed-Rate Loan (Price System)**
-This method keeps the monthly payment constant throughout the loan term.
+$$i = (1 + i_{a})^{1/12} - 1$$
 
-Formula:
-\[
-A = P \times \frac{i(1+i)^n}{(1+i)^n - 1}
-\]
-Where:
-- \(A\) = Monthly installment  
-- \(P\) = Loan principal (property price - down payment)  
-- \(i\) = Monthly interest rate (\% annual rate / 12)  
-- \(n\) = Total number of payments (years × 12 months)  
+With principal $P$ (property value − down payment) and $n$ monthly installments:
 
-### **Decreasing Balance Loan (SAC System)**
-This method reduces the monthly payment over time.
+**Price** — fixed installment:
 
-First installment:
-\[
-A = \frac{P}{n} + (P - \text{paid}) \times i
-\]
-Where:
-- \( P/n \) is the fixed monthly amortization  
-- The interest applies only to the remaining balance  
+$$A = P \cdot \frac{i(1+i)^n}{(1+i)^n - 1}$$
 
----
+**SAC** — fixed amortization $P/n$; installment $k$ is
 
-## **Tech Stack**
-- **React Native (Expo)**
-- **TypeScript**
-- **Expo Router**
-- **React Navigation**
-- **Jest (for testing)**
+$$A_k = \frac{P}{n} + i \cdot \left(P - (k-1)\frac{P}{n}\right)$$
 
----
+The last installment settles any floating-point residue so the balance always ends at exactly zero.
 
-## **Planned Future Features**
-- **Export loan details as a PDF**  
+## Roadmap
+
+- Insurance (MIP/DFI), admin fee and TR in the installment
+- Extra (early) amortization simulation
+- Export to PDF
