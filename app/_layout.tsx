@@ -1,35 +1,26 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
+import { ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { PaperProvider } from 'react-native-paper';
 import 'react-native-reanimated';
 
-SplashScreen.preventAutoHideAsync();
+import { darkTheme, lightTheme, navigationTheme } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function RootLayout() {
-
-  const [loaded] = useFonts({
-    SpaceMono: require('@/assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
-  }
+  const theme = useColorScheme() === 'dark' ? darkTheme : lightTheme;
 
   return (
-    <>
-      <StatusBar />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-      </Stack>
-    </>
+    <PaperProvider theme={theme}>
+      <ThemeProvider value={navigationTheme(theme)}>
+        <StatusBar style={theme.dark ? 'light' : 'dark'} />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: theme.colors.background },
+          }}
+        />
+      </ThemeProvider>
+    </PaperProvider>
   );
 }

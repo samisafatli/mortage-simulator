@@ -1,25 +1,44 @@
 import React from 'react';
-import { Dialog, Portal, Paragraph, Button } from 'react-native-paper';
+import { Button, Dialog, Portal, Text } from 'react-native-paper';
 
-type AlertDialogProps = {
-    visible: boolean;
-    message: string;
-    onClose: () => void;
-    title?: string;
-};
+import { TEXTS } from '@/constants/texts';
+import { useAppTheme } from '@/constants/theme';
 
-export default function AlertDialog({ visible, message, onClose, title = "Atenção" }: AlertDialogProps) {
-    return (
-        <Portal>
-            <Dialog visible={visible} onDismiss={onClose}>
-                <Dialog.Title>{title}</Dialog.Title>
-                <Dialog.Content>
-                    <Paragraph>{message}</Paragraph>
-                </Dialog.Content>
-                <Dialog.Actions>
-                    <Button onPress={onClose}>OK</Button>
-                </Dialog.Actions>
-            </Dialog>
-        </Portal>
-    );
+type ConfirmDialogProps = Readonly<{
+  visible: boolean;
+  title: string;
+  message: string;
+  confirmLabel: string;
+  onConfirm: () => void;
+  onDismiss: () => void;
+  destructive?: boolean;
+}>;
+
+export default function ConfirmDialog({
+  visible,
+  title,
+  message,
+  confirmLabel,
+  onConfirm,
+  onDismiss,
+  destructive = false,
+}: ConfirmDialogProps) {
+  const theme = useAppTheme();
+
+  return (
+    <Portal>
+      <Dialog visible={visible} onDismiss={onDismiss}>
+        <Dialog.Title>{title}</Dialog.Title>
+        <Dialog.Content>
+          <Text variant="bodyMedium">{message}</Text>
+        </Dialog.Content>
+        <Dialog.Actions>
+          <Button onPress={onDismiss}>{TEXTS.BUTTON_CANCEL}</Button>
+          <Button onPress={onConfirm} textColor={destructive ? theme.colors.error : undefined}>
+            {confirmLabel}
+          </Button>
+        </Dialog.Actions>
+      </Dialog>
+    </Portal>
+  );
 }
